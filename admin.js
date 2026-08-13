@@ -1,139 +1,467 @@
-import{auth,db,ADMIN}from'./firebase-config.js';import{GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';import{collection,query,orderBy,getDocs,doc,writeBatch,serverTimestamp}from'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';const $=s=>document.querySelector(s),provider=new GoogleAuthProvider();provider.setCustomParameters({hd:'g.cnees.kr',prompt:'select_account'});let admin=false,all=[];
-$('#login').onclick=async()=>auth.currentUser?signOut(auth):signInWithPopup(auth,provider).catch(e=>$('#msg').textContent=e.message);onAuthStateChanged(auth,async u=>{admin=u?.email?.toLowerCase()===ADMIN;$('#login').textContent=u?'로그아웃':'관리자 로그인';if(u&&!admin){await signOut(auth);alert('관리자 계정이 아닙니다.')}if(admin){$('#msg').textContent='관리자 인증 완료';load()}});
-async function load(){const s=await getDocs(query(collection(db,'matches'),orderBy('matchNo')));all=s.docs.map(d=>({id:d.id,...d.data()}));$('#matches').innerHTML=all.map(m=>`<article class="admin-match"><div><b>${m.matchNo}. ${m.teamA} vs ${m.teamB}</b><small style="display:block;color:#7b8590">${m.round} · ${m.status}${m.winner?' · '+m.winner+' 승':''}</small></div><select id="w-${m.id}"><option value="">승자 선택</option><option>${m.teamA}</option><option>${m.teamB}</option></select><button data-id="${m.id}" ${m.winner?'disabled':''}>결과 확정</button></article>`).join('');document.querySelectorAll('.admin-match button').forEach(b=>b.onclick=()=>finish(b.dataset.id))}
-async function finish(id){if(!admin)return;const m=all.find(x=>x.id===id),winner=$(`#w-${id}`).value;if(!winner||!confirm(`${winner} 승리로 확정할까요?`))return;try{const [ps,us]=await Promise.all([getDocs(collection(db,'predictions')),getDocs(collection(db,'users'))]),batch=writeBatch(db),current=ps.docs.filter(x=>x.data().matchId===id);batch.update(doc(db,'matches',id),{winner,status:'finished'});current.forEach(p=>{const d=p.data(),ok=d.selectedTeam===winner;batch.update(p.ref,{correct:ok});if(!ok)batch.update(doc(db,'users',d.uid),{alive:false,eliminatedAt:serverTimestamp(),eliminatedMatchId:id})});const nextMap={1:5,2:6,3:7,4:8,5:9,6:9,7:10,8:10,9:11,10:11},nextNo=nextMap[m.matchNo];if(nextNo){const n=all.find(x=>x.matchNo===nextNo),data={};if(n.teamA===`W${m.matchNo}`)data.teamA=winner;if(n.teamB===`W${m.matchNo}`)data.teamB=winner;if(Object.keys(data).length)batch.update(doc(db,'matches',n.id),data)}const next=all.find(x=>x.matchNo===m.matchNo+1);if(next)batch.update(doc(db,'matches',next.id),{status:'open'});
-const score=new Map();ps.docs.forEach(p=>{const d=p.data(),ok=d.matchId===id?d.selectedTeam===winner:d.correct===true;if(ok)score.set(d.uid,(score.get(d.uid)||0)+1)});const entries=us.docs.map(u=>{const d=u.data(),lost=current.some(p=>p.data().uid===u.id&&p.data().selectedTeam!==winner);return{uid:u.id,name:d.name||'',email:d.email||'',hits:score.get(u.id)||0,alive:lost?false:d.alive!==false}}).sort((a,b)=>b.hits-a.hits||Number(b.alive)-Number(a.alive)||a.name.localeCompare(b.name,'ko'));let last=-1,rank=0;entries.forEach((x,i)=>{if(x.hits!==last){rank=i+1;last=x.hits}x.rank=rank});batch.set(doc(db,'publicStats','leaderboard'),{entries,updatedAt:serverTimestamp()});await batch.commit();$('#msg').textContent=`${winner} 승리·랭킹 반영 완료`;load()}catch(e){$('#msg').textContent='처리 실패: '+e.message}}
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
 
-import {
-  collection,
-  query,
-  orderBy,
-  getDocs,
-  doc,
-  writeBatch,
-  serverTimestamp,
-  onSnapshot,
-  where
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-let stopPredictionListener = null;
+  <title>챌린저컵 관리자</title>
 
-function watchCurrentMatchPredictions(match) {
-  if (stopPredictionListener) {
-    stopPredictionListener();
-  }
+  <link rel="stylesheet" href="./style.css">
 
-  if (!match) {
-    return;
-  }
-
-  const predictionQuery = query(
-    collection(db, "predictions"),
-    where("matchId", "==", match.id)
-  );
-
-  stopPredictionListener = onSnapshot(
-    predictionQuery,
-    snapshot => {
-      let teamACount = 0;
-      let teamBCount = 0;
-
-      snapshot.forEach(predictionDocument => {
-        const prediction = predictionDocument.data();
-
-        if (prediction.selectedTeam === match.teamA) {
-          teamACount += 1;
-        }
-
-        if (prediction.selectedTeam === match.teamB) {
-          teamBCount += 1;
-        }
-      });
-
-      const total = teamACount + teamBCount;
-
-      const teamAPercent =
-        total === 0
-          ? 0
-          : Math.round(teamACount / total * 100);
-
-      const teamBPercent =
-        total === 0
-          ? 0
-          : 100 - teamAPercent;
-
-      renderLivePredictionStats({
-        match,
-        total,
-        teamACount,
-        teamBCount,
-        teamAPercent,
-        teamBPercent
-      });
-    },
-    error => {
-      document.getElementById("liveStats").innerHTML =
-        `<p>실시간 집계를 불러오지 못했습니다.</p>
-         <small>${error.message}</small>`;
+  <style>
+    .admin-page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 35px 24px 70px;
     }
-  );
-}
 
-function renderLivePredictionStats(stats) {
-  const {
-    match,
-    total,
-    teamACount,
-    teamBCount,
-    teamAPercent,
-    teamBPercent
-  } = stats;
+    .admin-heading {
+      margin-bottom: 28px;
+    }
 
-  document.getElementById("liveStats").innerHTML = `
-    <div class="live-stats-title">
-      <div>
-        <small>LIVE PREDICTION</small>
-        <h2>
-          ${match.teamA}
-          <span>VS</span>
-          ${match.teamB}
-        </h2>
-      </div>
+    .admin-heading small {
+      color: #1468ff;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+    }
 
-      <strong>${total}명 참여</strong>
+    .admin-heading h1 {
+      margin: 7px 0 8px;
+      font-size: 40px;
+      letter-spacing: -0.055em;
+    }
+
+    .admin-heading p {
+      margin: 0;
+      color: #77818c;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .admin-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .admin-panel {
+      padding: 26px;
+    }
+
+    .admin-panel-title {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .admin-panel-title small {
+      color: #1468ff;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+    }
+
+    .admin-panel-title h2 {
+      margin: 4px 0 0;
+      font-size: 21px;
+    }
+
+    .admin-panel-title > span {
+      padding: 6px 9px;
+      border-radius: 20px;
+      background: #fff1f1;
+      color: #d94141;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    #adminMessage {
+      margin-bottom: 20px;
+      padding: 13px 15px;
+      border-radius: 11px;
+      background: #f1f3f5;
+      color: #626d78;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    #adminMessage.success {
+      background: #eaf7e5;
+      color: #337322;
+    }
+
+    #adminMessage.error {
+      background: #fff0f0;
+      color: #bd3434;
+    }
+
+    .live-stats-title {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 26px;
+    }
+
+    .live-stats-title small {
+      color: #1468ff;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+    }
+
+    .live-stats-title h2 {
+      margin: 5px 0 0;
+      font-size: 25px;
+    }
+
+    .live-stats-title h2 span {
+      margin: 0 9px;
+      color: #a4abb3;
+      font-size: 13px;
+    }
+
+    .live-stats-title > strong {
+      font-size: 15px;
+    }
+
+    .live-empty {
+      padding: 30px 15px;
+      color: #8b949e;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .prediction-stat {
+      margin-top: 19px;
+    }
+
+    .prediction-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .prediction-label b {
+      font-size: 15px;
+    }
+
+    .prediction-label span {
+      color: #68727d;
+      font-size: 12px;
+    }
+
+    .prediction-bar {
+      height: 10px;
+      overflow: hidden;
+      background: #e8ebef;
+      border-radius: 10px;
+    }
+
+    .prediction-bar i {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: #1468ff;
+      border-radius: 10px;
+      transition: width 0.35s ease;
+    }
+
+    .prediction-bar.team-b i {
+      background: #8b5cf6;
+    }
+
+    .live-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 23px;
+      padding-top: 15px;
+      border-top: 1px solid #e6eaee;
+      color: #8b949e;
+      font-size: 10px;
+    }
+
+    .match-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .admin-match {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 125px 90px;
+      gap: 10px;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid #e6eaee;
+      border-radius: 14px;
+      background: #ffffff;
+    }
+
+    .admin-match.open-match {
+      border-color: #a8c5ff;
+      background: #f6f9ff;
+    }
+
+    .admin-match.finished-match {
+      opacity: 0.65;
+    }
+
+    .admin-match-info {
+      min-width: 0;
+    }
+
+    .admin-match-info b {
+      display: block;
+      overflow: hidden;
+      font-size: 14px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .admin-match-info small {
+      display: block;
+      margin-top: 4px;
+      color: #7b8590;
+      font-size: 10px;
+    }
+
+    .admin-match select {
+      width: 100%;
+      padding: 10px 8px;
+      border: 1px solid #dfe3e8;
+      border-radius: 9px;
+      background: #ffffff;
+      font-size: 11px;
+    }
+
+    .admin-match button {
+      padding: 10px 8px;
+      border: 0;
+      border-radius: 9px;
+      background: #1468ff;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .admin-match button:disabled {
+      background: #bdc3ca;
+      cursor: not-allowed;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .summary-item {
+      padding: 17px;
+      border: 1px solid #e6eaee;
+      border-radius: 13px;
+      background: #fafbfc;
+    }
+
+    .summary-item small {
+      display: block;
+      color: #818b96;
+      font-size: 9px;
+    }
+
+    .summary-item strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 23px;
+    }
+
+    .summary-item.blue strong {
+      color: #1468ff;
+    }
+
+    .summary-item.red strong {
+      color: #df4141;
+    }
+
+    .admin-note {
+      margin-top: 14px;
+      color: #828b95;
+      font-size: 10px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 900px) {
+      .admin-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .admin-page {
+        padding: 25px 14px 50px;
+      }
+
+      .admin-heading h1 {
+        font-size: 32px;
+      }
+
+      .admin-match {
+        grid-template-columns: 1fr;
+      }
+
+      .live-stats-title {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="top">
+    <div class="brand">
+      CHALLENGER ADMIN
+      <small>RESULT CONTROL</small>
     </div>
 
-    <div class="prediction-stat">
-      <div class="prediction-label">
-        <b>${match.teamA}</b>
-        <span>
-          ${teamACount}명 · ${teamAPercent}%
-        </span>
-      </div>
+    <a
+      href="./index.html"
+      style="
+        margin-left: auto;
+        color: #77818c;
+        font-size: 11px;
+        text-decoration: none;
+      "
+    >
+      학생 화면
+    </a>
 
-      <div class="prediction-bar">
-        <i
-          style="width: ${teamAPercent}%"
-        ></i>
-      </div>
+    <button id="login" class="account">
+      관리자 로그인
+    </button>
+  </header>
+
+  <main class="admin-page">
+    <section class="admin-heading">
+      <small>ADMIN DASHBOARD</small>
+
+      <h1>경기 운영 관리</h1>
+
+      <p>
+        실시간 예측 비율을 확인하고 경기 결과를 확정합니다.
+        결과를 확정하면 오답자 탈락, 다음 대진 반영, 랭킹
+        재계산이 자동으로 진행됩니다.
+      </p>
+    </section>
+
+    <div id="adminMessage">
+      관리자 로그인이 필요합니다.
     </div>
 
-    <div class="prediction-stat">
-      <div class="prediction-label">
-        <b>${match.teamB}</b>
-        <span>
-          ${teamBCount}명 · ${teamBPercent}%
-        </span>
+    <div class="admin-grid">
+      <div class="admin-column">
+        <section class="panel admin-panel">
+          <div id="liveStats">
+            <div class="live-empty">
+              관리자 로그인 후 현재 경기의 예측 현황을
+              확인할 수 있습니다.
+            </div>
+          </div>
+        </section>
+
+        <section class="panel admin-panel">
+          <div class="admin-panel-title">
+            <div>
+              <small>MATCH CONTROL</small>
+              <h2>경기 결과 입력</h2>
+            </div>
+          </div>
+
+          <div id="matches" class="match-list">
+            <div class="live-empty">
+              경기 정보를 불러오려면 관리자 로그인이 필요합니다.
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div class="prediction-bar team-b">
-        <i
-          style="width: ${teamBPercent}%"
-        ></i>
-      </div>
+      <aside class="admin-column">
+        <section class="panel admin-panel">
+          <div class="admin-panel-title">
+            <div>
+              <small>TOURNAMENT STATUS</small>
+              <h2>대회 현황</h2>
+            </div>
+
+            <span id="liveBadge">
+              대기 중
+            </span>
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-item">
+              <small>전체 참가자</small>
+              <strong id="totalUsers">0</strong>
+            </div>
+
+            <div class="summary-item blue">
+              <small>현재 생존자</small>
+              <strong id="aliveUsers">0</strong>
+            </div>
+
+            <div class="summary-item red">
+              <small>탈락자</small>
+              <strong id="outUsers">0</strong>
+            </div>
+
+            <div class="summary-item">
+              <small>현재 경기 참여</small>
+              <strong id="currentEntries">0</strong>
+            </div>
+          </div>
+
+          <p class="admin-note">
+            학생의 실시간 선택 비율은 이 관리자 화면에서만
+            표시됩니다. 경기 전 학생 화면에는 공개되지 않습니다.
+          </p>
+        </section>
+
+        <section class="panel admin-panel">
+          <div class="admin-panel-title">
+            <div>
+              <small>CAUTION</small>
+              <h2>결과 확정 전 확인</h2>
+            </div>
+          </div>
+
+          <p class="admin-note">
+            결과 확정 버튼은 실제 데이터를 즉시 변경합니다.
+            승리 팀을 잘못 선택하면 오답자 처리와 다음 대진도
+            잘못 반영되므로 반드시 경기 결과를 확인한 뒤
+            한 번만 누르세요.
+          </p>
+        </section>
+      </aside>
     </div>
-  `;
-}
-const currentMatch =
-  all.find(match => match.status === "open");
+  </main>
 
-watchCurrentMatchPredictions(currentMatch);
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>
