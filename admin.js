@@ -1,65 +1,910 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  >
+import { auth, db } from "./firebase-config.js";
 
-  <title>챌린저컵 관리자</title>
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-  <link rel="stylesheet" href="./style.css">
+import {
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  query,
+  where,
+  updateDoc,
+  setDoc,
+  increment,
+  serverTimestamp,
+  writeBatch
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-  <style>
-    .admin-page {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 35px 24px 70px;
+
+/* =========================================================
+   설정
+========================================================= */
+
+const ADMIN_EMAIL = "cnsh32_1218@g.cnees.kr";
+
+const provider = new GoogleAuthProvider();
+
+provider.setCustomParameters({
+  hd: "g.cnees.kr",
+  prompt: "select_account"
+});
+
+let currentAdmin = null;
+let matches = [];
+let predictions = [];
+
+let unsubscribeMatches = null;
+let unsubscribePredictions = null;
+
+
+/* =========================================================
+   HTML 요소
+========================================================= */
+
+function findElement(...selectors) {
+  for (const selector of selectors) {
+    const element = document.querySelector(selector);
+
+    if (element) {
+      return element;
+    }
+  }
+
+  return null;
+}
+
+function getLoginButton() {
+  return findElement(
+    "#adminLoginBtn",
+    "#login",
+    "#loginBtn",
+    "#admin-login",
+    "[data-admin-login]"
+  );
+}
+
+function getStatusElement() {
+  return findElement(
+    "#adminStatus",
+    "#loginStatus",
+    "#statusMessage",
+    "#status",
+    "[data-admin-status]"
+  );
+}
+
+function getAdminEmailElement() {
+  return findElement(
+    "#adminEmail",
+    "#userEmail",
+    "[data-admin-email]"
+  );
+}
+
+function getDashboardElement() {
+  let dashboard = findElement(
+    "#adminMatches",
+    "#matchManagement",
+    "#matchesList",
+    "#liveStats",
+    "#adminDashboard",
+    "[data-admin-matches]"
+  );
+
+  if (dashboard) {
+    return dashboard;
+  }
+
+  dashboard = document.createElement("section");
+  dashboard.id = "adminMatches";
+  dashboard.className = "admin-match-section";
+
+  const main = document.querySelector("main") || document.body;
+  main.appendChild(dashboard);
+
+  return dashboard;
+}
+
+
+/* =========================================================
+   공통 함수
+========================================================= */
+
+function setStatus(message, type = "normal") {
+  const element = getStatusElement();
+
+  if (element) {
+    element.textContent = message;
+
+    if (type === "error") {
+      element.style.color = "#dc2626";
+    } else if (type === "success") {
+      element.style.color = "#15803d";
+    } else {
+      element.style.color = "";
+    }
+  }
+
+  console.log(`[관리자] ${message}`);
+}
+
+function showError(error, title = "오류") {
+  console.error(error);
+
+  const message =
+    error?.message ||
+    error?.code ||
+    "알 수 없는 오류가 발생했습니다.";
+
+  setStatus(`${title}: ${message}`, "error");
+}
+
+function isAdmin(user) {
+  return Boolean(
+    user?.email &&
+    user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()
+  );
+}
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function timestampToMilliseconds(value) {
+  if (!value) {
+    return 0;
+  }
+
+  if (typeof value.toMillis === "function") {
+    return value.toMillis();
+  }
+
+  if (typeof value.seconds === "number") {
+    return value.seconds * 1000;
+  }
+
+  const milliseconds = new Date(value).getTime();
+
+  return Number.isNaN(milliseconds) ? 0 : milliseconds;
+}
+
+function formatDeadline(value) {
+  const milliseconds = timestampToMilliseconds(value);
+
+  if (!milliseconds) {
+    return "마감 시간 미설정";
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(new Date(milliseconds));
+}
+
+function getPredictionTeam(prediction) {
+  return (
+    prediction.pick ||
+    prediction.predictedTeam ||
+    prediction.selectedTeam ||
+    prediction.team ||
+    prediction.choice ||
+    null
+  );
+}
+
+function getPredictionUserId(prediction) {
+  return (
+    prediction.uid ||
+    prediction.userId ||
+    prediction.userUID ||
+    null
+  );
+}
+
+function getPredictionsForMatch(matchId) {
+  return predictions.filter((prediction) => {
+    return (
+      prediction.matchId === matchId ||
+      prediction.gameId === matchId
+    );
+  });
+}
+
+function calculateVotes(match) {
+  const matchPredictions = getPredictionsForMatch(match.id);
+
+  let teamACount = 0;
+  let teamBCount = 0;
+
+  for (const prediction of matchPredictions) {
+    const selectedTeam = getPredictionTeam(prediction);
+
+    if (selectedTeam === match.teamA) {
+      teamACount += 1;
     }
 
-    .admin-heading {
-      margin-bottom: 28px;
+    if (selectedTeam === match.teamB) {
+      teamBCount += 1;
+    }
+  }
+
+  const total = teamACount + teamBCount;
+
+  return {
+    teamACount,
+    teamBCount,
+    total,
+
+    teamAPercent:
+      total === 0
+        ? 0
+        : Math.round((teamACount / total) * 100),
+
+    teamBPercent:
+      total === 0
+        ? 0
+        : Math.round((teamBCount / total) * 100)
+  };
+}
+
+
+/* =========================================================
+   관리자 로그인
+========================================================= */
+
+async function loginOrLogout() {
+  const button = getLoginButton();
+
+  try {
+    if (auth.currentUser) {
+      button.disabled = true;
+      await signOut(auth);
+      return;
     }
 
-    .admin-heading small {
-      color: #1468ff;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.15em;
+    button.disabled = true;
+    button.textContent = "로그인 중...";
+
+    setStatus("Google 로그인 창을 여는 중입니다.");
+
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    if (!isAdmin(user)) {
+      await signOut(auth);
+
+      alert(
+        `관리자 계정만 로그인할 수 있습니다.\n\n관리자 계정: ${ADMIN_EMAIL}`
+      );
+
+      return;
     }
 
-    .admin-heading h1 {
-      margin: 7px 0 8px;
-      font-size: 40px;
-      letter-spacing: -0.055em;
+    setStatus("관리자 로그인이 완료되었습니다.", "success");
+  } catch (error) {
+    if (error.code === "auth/popup-closed-by-user") {
+      setStatus("로그인 창이 닫혔습니다.");
+      return;
     }
 
-    .admin-heading p {
-      margin: 0;
-      color: #77818c;
-      font-size: 13px;
-      line-height: 1.6;
+    if (error.code === "auth/popup-blocked") {
+      alert(
+        "로그인 팝업이 차단되었습니다.\n브라우저 주소창에서 팝업을 허용해주세요."
+      );
+    } else {
+      alert(`로그인 실패\n${error.message}`);
     }
 
-    .admin-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 380px;
-      gap: 20px;
-      align-items: start;
+    showError(error, "로그인 실패");
+  } finally {
+    if (button) {
+      button.disabled = false;
+
+      if (!auth.currentUser) {
+        button.textContent = "관리자 로그인";
+      }
+    }
+  }
+}
+
+function bindLoginButton() {
+  const button = getLoginButton();
+
+  if (!button) {
+    setStatus(
+      "관리자 로그인 버튼을 찾지 못했습니다. 버튼 ID를 adminLoginBtn으로 설정해주세요.",
+      "error"
+    );
+
+    console.error(
+      `admin.html에 다음 버튼이 필요합니다:
+      <button id="adminLoginBtn" type="button">관리자 로그인</button>`
+    );
+
+    return;
+  }
+
+  button.type = "button";
+  button.removeAttribute("onclick");
+
+  /*
+   이전에 연결된 이벤트가 있더라도 중복 실행되지 않게 복제합니다.
+  */
+  const cleanButton = button.cloneNode(true);
+
+  button.replaceWith(cleanButton);
+  cleanButton.addEventListener("click", loginOrLogout);
+
+  console.log("관리자 로그인 버튼 연결 완료");
+}
+
+function updateLoginUI(user) {
+  const button = getLoginButton();
+  const emailElement = getAdminEmailElement();
+
+  if (button) {
+    button.disabled = false;
+    button.textContent = user ? "로그아웃" : "관리자 로그인";
+  }
+
+  if (emailElement) {
+    emailElement.textContent = user?.email || ADMIN_EMAIL;
+  }
+
+  document.body.classList.toggle(
+    "admin-logged-in",
+    Boolean(user)
+  );
+
+  document.body.classList.toggle(
+    "admin-logged-out",
+    !user
+  );
+}
+
+
+/* =========================================================
+   관리자 화면 출력
+========================================================= */
+
+function renderDashboard() {
+  const dashboard = getDashboardElement();
+
+  if (!currentAdmin) {
+    dashboard.innerHTML = `
+      <div class="admin-notice">
+        관리자 계정으로 로그인하면 실시간 예측 비율과 경기 결과를 관리할 수 있습니다.
+      </div>
+    `;
+
+    return;
+  }
+
+  if (matches.length === 0) {
+    dashboard.innerHTML = `
+      <div class="admin-notice">
+        Firestore의 matches 컬렉션에 등록된 경기가 없습니다.
+      </div>
+    `;
+
+    return;
+  }
+
+  const sortedMatches = [...matches].sort((a, b) => {
+    return (
+      timestampToMilliseconds(a.deadline) -
+      timestampToMilliseconds(b.deadline)
+    );
+  });
+
+  dashboard.innerHTML = `
+    <div class="admin-section-heading">
+      <div>
+        <p class="admin-eyebrow">LIVE CONTROL</p>
+        <h2>실시간 승부 예측 현황</h2>
+        <p>
+          아무도 참여하지 않은 경기는 양쪽 모두 0%로 표시됩니다.
+        </p>
+      </div>
+
+      <div class="admin-total">
+        전체 경기 ${matches.length}개
+      </div>
+    </div>
+
+    <div class="admin-match-grid">
+      ${sortedMatches.map(createMatchCard).join("")}
+    </div>
+  `;
+
+  bindResultButtons();
+}
+
+function createMatchCard(match) {
+  const votes = calculateVotes(match);
+
+  const isBye = Boolean(match.byeTeam);
+
+  const isFinished =
+    match.status === "finished" ||
+    match.status === "closed" ||
+    Boolean(match.winner);
+
+  const winner = match.winner || match.byeTeam || "";
+
+  let statusLabel = "예측 진행 중";
+  let statusClass = "open";
+
+  if (isBye) {
+    statusLabel = "부전승";
+    statusClass = "bye";
+  } else if (isFinished) {
+    statusLabel = "결과 확정";
+    statusClass = "finished";
+  }
+
+  return `
+    <article
+      class="admin-match-card ${isFinished ? "finished" : ""}"
+      data-match-id="${escapeHtml(match.id)}"
+    >
+      <div class="admin-match-top">
+        <div>
+          <span class="admin-round">
+            ${escapeHtml(match.round || "경기")}
+          </span>
+
+          <span class="admin-date">
+            ${escapeHtml(
+              match.dateLabel || formatDeadline(match.deadline)
+            )}
+          </span>
+        </div>
+
+        <span class="admin-match-status ${statusClass}">
+          ${statusLabel}
+        </span>
+      </div>
+
+      ${
+        isBye
+          ? createByeCard(match)
+          : createNormalMatchCard(match, votes, isFinished, winner)
+      }
+    </article>
+  `;
+}
+
+function createByeCard(match) {
+  return `
+    <div class="admin-bye-box">
+      <div class="admin-bye-label">BYE</div>
+
+      <strong>
+        ${escapeHtml(match.byeTeam)}
+      </strong>
+
+      <p>
+        상대 팀 없이 다음 라운드로 진출하는 부전승 경기입니다.
+      </p>
+    </div>
+  `;
+}
+
+function createNormalMatchCard(
+  match,
+  votes,
+  isFinished,
+  winner
+) {
+  return `
+    <div class="admin-versus">
+      <strong>${escapeHtml(match.teamA || "미정")}</strong>
+      <span>VS</span>
+      <strong>${escapeHtml(match.teamB || "미정")}</strong>
+    </div>
+
+    <div class="admin-vote-row">
+      <div class="admin-vote-info">
+        <strong>${escapeHtml(match.teamA || "미정")}</strong>
+
+        <span>
+          ${votes.teamACount}명 · ${votes.teamAPercent}%
+        </span>
+      </div>
+
+      <div class="admin-vote-bar">
+        <div
+          class="admin-vote-fill team-a"
+          style="width: ${votes.teamAPercent}%"
+        ></div>
+      </div>
+    </div>
+
+    <div class="admin-vote-row">
+      <div class="admin-vote-info">
+        <strong>${escapeHtml(match.teamB || "미정")}</strong>
+
+        <span>
+          ${votes.teamBCount}명 · ${votes.teamBPercent}%
+        </span>
+      </div>
+
+      <div class="admin-vote-bar">
+        <div
+          class="admin-vote-fill team-b"
+          style="width: ${votes.teamBPercent}%"
+        ></div>
+      </div>
+    </div>
+
+    <div class="admin-vote-summary">
+      총 참여 ${votes.total}명
+    </div>
+
+    <div class="admin-result-control">
+      ${
+        isFinished
+          ? `
+            <div class="admin-winner-result">
+              승리 팀
+              <strong>${escapeHtml(winner)}</strong>
+            </div>
+
+            <button
+              type="button"
+              class="admin-reopen-button"
+              data-reopen="${escapeHtml(match.id)}"
+            >
+              확정 취소
+            </button>
+          `
+          : `
+            <select
+              class="admin-winner-select"
+              data-winner="${escapeHtml(match.id)}"
+            >
+              <option value="">승리 팀 선택</option>
+
+              <option value="${escapeHtml(match.teamA || "")}">
+                ${escapeHtml(match.teamA || "미정")}
+              </option>
+
+              <option value="${escapeHtml(match.teamB || "")}">
+                ${escapeHtml(match.teamB || "미정")}
+              </option>
+            </select>
+
+            <button
+              type="button"
+              class="admin-confirm-button"
+              data-confirm="${escapeHtml(match.id)}"
+            >
+              결과 확정
+            </button>
+          `
+      }
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   경기 결과 처리
+========================================================= */
+
+function bindResultButtons() {
+  document
+    .querySelectorAll("[data-confirm]")
+    .forEach((button) => {
+      button.addEventListener("click", async () => {
+        const matchId = button.dataset.confirm;
+
+        const select = document.querySelector(
+          `[data-winner="${CSS.escape(matchId)}"]`
+        );
+
+        const winner = select?.value;
+
+        if (!winner) {
+          alert("승리 팀을 먼저 선택해주세요.");
+          return;
+        }
+
+        const match = matches.find(
+          (item) => item.id === matchId
+        );
+
+        if (!match) {
+          alert("경기 정보를 찾지 못했습니다.");
+          return;
+        }
+
+        const confirmed = confirm(
+          `${winner} 팀의 승리로 확정할까요?\n\n확정하면 참가자의 적중 수와 생존 상태가 반영됩니다.`
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        button.disabled = true;
+        select.disabled = true;
+        button.textContent = "처리 중...";
+
+        try {
+          await confirmMatchResult(match, winner);
+
+          alert(
+            `${winner} 팀의 승리로 확정했습니다.`
+          );
+        } catch (error) {
+          showError(error, "경기 결과 확정 실패");
+
+          alert(
+            `결과 확정에 실패했습니다.\n${error.message}`
+          );
+
+          button.disabled = false;
+          select.disabled = false;
+          button.textContent = "결과 확정";
+        }
+      });
+    });
+
+  document
+    .querySelectorAll("[data-reopen]")
+    .forEach((button) => {
+      button.addEventListener("click", async () => {
+        const matchId = button.dataset.reopen;
+
+        const confirmed = confirm(
+          "결과 확정을 취소할까요?\n\n이미 반영된 적중 수와 탈락 상태는 자동으로 복구되지 않습니다."
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = "처리 중...";
+
+        try {
+          await updateDoc(
+            doc(db, "matches", matchId),
+            {
+              status: "open",
+              winner: null,
+              updatedAt: serverTimestamp()
+            }
+          );
+
+          alert("결과 확정을 취소했습니다.");
+        } catch (error) {
+          showError(error, "확정 취소 실패");
+
+          button.disabled = false;
+          button.textContent = "확정 취소";
+        }
+      });
+    });
+}
+
+async function confirmMatchResult(match, winner) {
+  /*
+   resultApplied가 true이면 사용자 결과를 다시 반영하지 않고
+   경기의 승리 팀 정보만 변경합니다.
+  */
+  if (match.resultApplied === true) {
+    await updateDoc(
+      doc(db, "matches", match.id),
+      {
+        winner,
+        status: "finished",
+        updatedAt: serverTimestamp()
+      }
+    );
+
+    return;
+  }
+
+  const predictionQuery = query(
+    collection(db, "predictions"),
+    where("matchId", "==", match.id)
+  );
+
+  const predictionSnapshot =
+    await getDocs(predictionQuery);
+
+  if (predictionSnapshot.size > 450) {
+    throw new Error(
+      "예측 참가자가 450명을 초과하여 한 번에 처리할 수 없습니다."
+    );
+  }
+
+  const batch = writeBatch(db);
+
+  predictionSnapshot.forEach(
+    (predictionDocument) => {
+      const prediction =
+        predictionDocument.data();
+
+      const userId =
+        getPredictionUserId(prediction);
+
+      const selectedTeam =
+        getPredictionTeam(prediction);
+
+      if (!userId) {
+        console.warn(
+          "사용자 UID가 없는 예측:",
+          predictionDocument.id
+        );
+
+        return;
+      }
+
+      const correct = selectedTeam === winner;
+
+      const userReference =
+        doc(db, "users", userId);
+
+      const predictionReference =
+        predictionDocument.ref;
+
+      if (correct) {
+        batch.set(
+          userReference,
+          {
+            alive: true,
+            hits: increment(1),
+            correctCount: increment(1),
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+      } else {
+        batch.set(
+          userReference,
+          {
+            alive: false,
+            eliminatedMatchId: match.id,
+            eliminatedAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+      }
+
+      batch.update(
+        predictionReference,
+        {
+          correct,
+          result: correct
+            ? "correct"
+            : "wrong",
+          checkedAt: serverTimestamp()
+        }
+      );
+    }
+  );
+
+  batch.update(
+    doc(db, "matches", match.id),
+    {
+      winner,
+      status: "finished",
+      resultApplied: true,
+      finishedAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    }
+  );
+
+  await batch.commit();
+}
+
+
+/* =========================================================
+   실시간 Firestore 연결
+========================================================= */
+
+function startRealtimeListeners() {
+  stopRealtimeListeners();
+
+  unsubscribeMatches = onSnapshot(
+    collection(db, "matches"),
+
+    (snapshot) => {
+      matches = snapshot.docs.map(
+        (matchDocument) => ({
+          id: matchDocument.id,
+          ...matchDocument.data()
+        })
+      );
+
+      renderDashboard();
+    },
+
+    (error) => {
+      showError(
+        error,
+        "경기 정보 불러오기 실패"
+      );
+    }
+  );
+
+  unsubscribePredictions = onSnapshot(
+    collection(db, "predictions"),
+
+    (snapshot) => {
+      predictions = snapshot.docs.map(
+        (predictionDocument) => ({
+          id: predictionDocument.id,
+          ...predictionDocument.data()
+        })
+      );
+
+      renderDashboard();
+    },
+
+    (error) => {
+      showError(
+        error,
+        "예측 현황 불러오기 실패"
+      );
+    }
+  );
+}
+
+function stopRealtimeListeners() {
+  if (unsubscribeMatches) {
+    unsubscribeMatches();
+    unsubscribeMatches = null;
+  }
+
+  if (unsubscribePredictions) {
+    unsubscribePredictions();
+    unsubscribePredictions = null;
+  }
+
+  matches = [];
+  predictions = [];
+}
+
+
+/* =========================================================
+   스타일
+========================================================= */
+
+function addAdminStyles() {
+  if (document.getElementById("admin-js-style")) {
+    return;
+  }
+
+  const style = document.createElement("style");
+  style.id = "admin-js-style";
+
+  style.textContent = `
+    .admin-match-section {
+      width: min(1180px, calc(100% - 48px));
+      margin: 32px auto 80px;
     }
 
-    .admin-column {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .admin-panel {
-      padding: 26px;
-    }
-
-    .admin-panel-title {
+    .admin-section-heading {
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -67,401 +912,315 @@
       margin-bottom: 20px;
     }
 
-    .admin-panel-title small {
-      color: #1468ff;
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 0.14em;
+    .admin-section-heading h2 {
+      margin: 2px 0 7px;
+      font-size: 28px;
+      letter-spacing: -0.04em;
     }
 
-    .admin-panel-title h2 {
-      margin: 4px 0 0;
+    .admin-section-heading p {
+      margin: 0;
+      color: #64748b;
+    }
+
+    .admin-eyebrow {
+      color: #1468ff !important;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+    }
+
+    .admin-total {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #eaf1ff;
+      color: #1468ff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .admin-match-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .admin-match-card {
+      padding: 22px;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      background: #ffffff;
+      box-shadow: 0 12px 35px rgba(15, 23, 42, 0.06);
+    }
+
+    .admin-match-card.finished {
+      background: #f8fafc;
+    }
+
+    .admin-match-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .admin-round {
+      font-weight: 800;
+    }
+
+    .admin-date {
+      margin-left: 7px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .admin-match-status {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .admin-match-status.open {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .admin-match-status.finished {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .admin-match-status.bye {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .admin-versus {
+      display: grid;
+      grid-template-columns: 1fr 45px 1fr;
+      align-items: center;
+      margin-bottom: 22px;
+      text-align: center;
       font-size: 21px;
     }
 
-    .admin-panel-title > span {
-      padding: 6px 9px;
-      border-radius: 20px;
-      background: #fff1f1;
-      color: #d94141;
-      font-size: 9px;
-      font-weight: 800;
-    }
-
-    #adminMessage {
-      margin-bottom: 20px;
-      padding: 13px 15px;
-      border-radius: 11px;
-      background: #f1f3f5;
-      color: #626d78;
-      font-size: 12px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-    }
-
-    #adminMessage.success {
-      background: #eaf7e5;
-      color: #337322;
-    }
-
-    #adminMessage.error {
-      background: #fff0f0;
-      color: #bd3434;
-    }
-
-    .live-stats-title {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 26px;
-    }
-
-    .live-stats-title small {
-      color: #1468ff;
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-    }
-
-    .live-stats-title h2 {
-      margin: 5px 0 0;
-      font-size: 25px;
-    }
-
-    .live-stats-title h2 span {
-      margin: 0 9px;
-      color: #a4abb3;
+    .admin-versus span {
+      color: #94a3b8;
       font-size: 13px;
+      font-weight: 800;
     }
 
-    .live-stats-title > strong {
-      font-size: 15px;
+    .admin-vote-row {
+      margin-top: 15px;
     }
 
-    .live-empty {
-      padding: 30px 15px;
-      color: #8b949e;
-      font-size: 12px;
-      text-align: center;
-    }
-
-    .prediction-stat {
-      margin-top: 19px;
-    }
-
-    .prediction-label {
+    .admin-vote-info {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      gap: 12px;
       margin-bottom: 8px;
     }
 
-    .prediction-label b {
-      font-size: 15px;
-    }
-
-    .prediction-label span {
-      color: #68727d;
-      font-size: 12px;
-    }
-
-    .prediction-bar {
-      height: 10px;
-      overflow: hidden;
-      background: #e8ebef;
-      border-radius: 10px;
-    }
-
-    .prediction-bar i {
-      display: block;
-      width: 0;
-      height: 100%;
-      background: #1468ff;
-      border-radius: 10px;
-      transition: width 0.35s ease;
-    }
-
-    .prediction-bar.team-b i {
-      background: #8b5cf6;
-    }
-
-    .live-meta {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 23px;
-      padding-top: 15px;
-      border-top: 1px solid #e6eaee;
-      color: #8b949e;
-      font-size: 10px;
-    }
-
-    .match-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .admin-match {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 125px 90px;
-      gap: 10px;
-      align-items: center;
-      padding: 15px;
-      border: 1px solid #e6eaee;
-      border-radius: 14px;
-      background: #ffffff;
-    }
-
-    .admin-match.open-match {
-      border-color: #a8c5ff;
-      background: #f6f9ff;
-    }
-
-    .admin-match.finished-match {
-      opacity: 0.65;
-    }
-
-    .admin-match-info {
-      min-width: 0;
-    }
-
-    .admin-match-info b {
-      display: block;
-      overflow: hidden;
+    .admin-vote-info span {
+      color: #64748b;
       font-size: 14px;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
-    .admin-match-info small {
-      display: block;
-      margin-top: 4px;
-      color: #7b8590;
-      font-size: 10px;
+    .admin-vote-bar {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e2e8f0;
     }
 
-    .admin-match select {
-      width: 100%;
-      padding: 10px 8px;
-      border: 1px solid #dfe3e8;
-      border-radius: 9px;
-      background: #ffffff;
-      font-size: 11px;
+    .admin-vote-fill {
+      height: 100%;
+      border-radius: inherit;
+      transition: width 0.25s ease;
     }
 
-    .admin-match button {
-      padding: 10px 8px;
-      border: 0;
-      border-radius: 9px;
+    .admin-vote-fill.team-a {
       background: #1468ff;
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: 700;
+    }
+
+    .admin-vote-fill.team-b {
+      background: #f97316;
+    }
+
+    .admin-vote-summary {
+      margin-top: 16px;
+      color: #475569;
+      font-size: 14px;
+    }
+
+    .admin-result-control {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .admin-winner-select {
+      flex: 1;
+      min-width: 0;
+      height: 44px;
+      padding: 0 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      background: #ffffff;
+      font: inherit;
+    }
+
+    .admin-confirm-button,
+    .admin-reopen-button {
+      height: 44px;
+      padding: 0 17px;
+      border: 0;
+      border-radius: 12px;
+      font: inherit;
+      font-weight: 800;
       cursor: pointer;
     }
 
-    .admin-match button:disabled {
-      background: #bdc3ca;
-      cursor: not-allowed;
+    .admin-confirm-button {
+      background: #121920;
+      color: #ffffff;
     }
 
-    .summary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    .admin-reopen-button {
+      background: #e2e8f0;
+      color: #334155;
     }
 
-    .summary-item {
-      padding: 17px;
-      border: 1px solid #e6eaee;
-      border-radius: 13px;
-      background: #fafbfc;
+    .admin-confirm-button:disabled,
+    .admin-reopen-button:disabled {
+      cursor: wait;
+      opacity: 0.5;
     }
 
-    .summary-item small {
-      display: block;
-      color: #818b96;
-      font-size: 9px;
+    .admin-winner-result {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .summary-item strong {
-      display: block;
-      margin-top: 5px;
-      font-size: 23px;
-    }
-
-    .summary-item.blue strong {
+    .admin-winner-result strong {
       color: #1468ff;
     }
 
-    .summary-item.red strong {
-      color: #df4141;
+    .admin-bye-box {
+      padding: 26px;
+      border-radius: 16px;
+      background: #eff6ff;
+      text-align: center;
     }
 
-    .admin-note {
-      margin-top: 14px;
-      color: #828b95;
-      font-size: 10px;
-      line-height: 1.6;
+    .admin-bye-box strong {
+      display: block;
+      margin: 8px 0;
+      font-size: 25px;
+    }
+
+    .admin-bye-box p {
+      margin: 0;
+      color: #64748b;
+    }
+
+    .admin-bye-label {
+      color: #1468ff;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+    }
+
+    .admin-notice {
+      padding: 50px 24px;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      background: #ffffff;
+      color: #64748b;
+      text-align: center;
     }
 
     @media (max-width: 900px) {
-      .admin-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 650px) {
-      .admin-page {
-        padding: 25px 14px 50px;
-      }
-
-      .admin-heading h1 {
-        font-size: 32px;
-      }
-
-      .admin-match {
+      .admin-match-grid {
         grid-template-columns: 1fr;
       }
 
-      .live-stats-title {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 10px;
+      .admin-match-section {
+        width: min(100% - 28px, 720px);
       }
     }
-  </style>
-</head>
+  `;
 
-<body>
-  <header class="top">
-    <div class="brand">
-      CHALLENGER ADMIN
-      <small>RESULT CONTROL</small>
-    </div>
+  document.head.appendChild(style);
+}
 
-    <a
-      href="./index.html"
-      style="
-        margin-left: auto;
-        color: #77818c;
-        font-size: 11px;
-        text-decoration: none;
-      "
-    >
-      학생 화면
-    </a>
 
-    <button id="login" class="account">
-      관리자 로그인
-    </button>
-  </header>
+/* =========================================================
+   인증 상태 확인
+========================================================= */
 
-  <main class="admin-page">
-    <section class="admin-heading">
-      <small>ADMIN DASHBOARD</small>
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    currentAdmin = null;
 
-      <h1>경기 운영 관리</h1>
+    stopRealtimeListeners();
+    updateLoginUI(null);
+    renderDashboard();
 
-      <p>
-        실시간 예측 비율을 확인하고 경기 결과를 확정합니다.
-        결과를 확정하면 오답자 탈락, 다음 대진 반영, 랭킹
-        재계산이 자동으로 진행됩니다.
-      </p>
-    </section>
+    setStatus("관리자 로그인이 필요합니다.");
 
-    <div id="adminMessage">
-      관리자 로그인이 필요합니다.
-    </div>
+    return;
+  }
 
-    <div class="admin-grid">
-      <div class="admin-column">
-        <section class="panel admin-panel">
-          <div id="liveStats">
-            <div class="live-empty">
-              관리자 로그인 후 현재 경기의 예측 현황을
-              확인할 수 있습니다.
-            </div>
-          </div>
-        </section>
+  if (!isAdmin(user)) {
+    currentAdmin = null;
 
-        <section class="panel admin-panel">
-          <div class="admin-panel-title">
-            <div>
-              <small>MATCH CONTROL</small>
-              <h2>경기 결과 입력</h2>
-            </div>
-          </div>
+    await signOut(auth);
 
-          <div id="matches" class="match-list">
-            <div class="live-empty">
-              경기 정보를 불러오려면 관리자 로그인이 필요합니다.
-            </div>
-          </div>
-        </section>
-      </div>
+    alert(
+      `관리자 계정이 아닙니다.\n${ADMIN_EMAIL} 계정으로 로그인해주세요.`
+    );
 
-      <aside class="admin-column">
-        <section class="panel admin-panel">
-          <div class="admin-panel-title">
-            <div>
-              <small>TOURNAMENT STATUS</small>
-              <h2>대회 현황</h2>
-            </div>
+    return;
+  }
 
-            <span id="liveBadge">
-              대기 중
-            </span>
-          </div>
+  currentAdmin = user;
 
-          <div class="summary-grid">
-            <div class="summary-item">
-              <small>전체 참가자</small>
-              <strong id="totalUsers">0</strong>
-            </div>
+  updateLoginUI(user);
 
-            <div class="summary-item blue">
-              <small>현재 생존자</small>
-              <strong id="aliveUsers">0</strong>
-            </div>
+  setStatus(
+    `${user.displayName || "관리자"}님으로 로그인했습니다.`,
+    "success"
+  );
 
-            <div class="summary-item red">
-              <small>탈락자</small>
-              <strong id="outUsers">0</strong>
-            </div>
+  startRealtimeListeners();
+});
 
-            <div class="summary-item">
-              <small>현재 경기 참여</small>
-              <strong id="currentEntries">0</strong>
-            </div>
-          </div>
 
-          <p class="admin-note">
-            학생의 실시간 선택 비율은 이 관리자 화면에서만
-            표시됩니다. 경기 전 학생 화면에는 공개되지 않습니다.
-          </p>
-        </section>
+/* =========================================================
+   페이지 시작
+========================================================= */
 
-        <section class="panel admin-panel">
-          <div class="admin-panel-title">
-            <div>
-              <small>CAUTION</small>
-              <h2>결과 확정 전 확인</h2>
-            </div>
-          </div>
+function initializeAdminPage() {
+  addAdminStyles();
+  bindLoginButton();
+  updateLoginUI(auth.currentUser);
+  renderDashboard();
 
-          <p class="admin-note">
-            결과 확정 버튼은 실제 데이터를 즉시 변경합니다.
-            승리 팀을 잘못 선택하면 오답자 처리와 다음 대진도
-            잘못 반영되므로 반드시 경기 결과를 확인한 뒤
-            한 번만 누르세요.
-          </p>
-        </section>
-      </aside>
-    </div>
-  </main>
+  console.log("admin.js 실행 완료");
+}
 
-  <script type="module" src="./admin.js"></script>
-</body>
-</html>
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializeAdminPage
+  );
+} else {
+  initializeAdminPage();
+}
