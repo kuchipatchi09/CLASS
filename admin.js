@@ -353,14 +353,17 @@ function getPredictionTeam(
 }
 
 function getParticipantUsers() {
-  return users.filter(
-    (user) =>
-      user.isAdmin !== true &&
-      user.email?.toLowerCase() !==
-        ADMIN_EMAIL.toLowerCase()
-  );
-}
+  return users.filter((user) => {
+    const email =
+      user.email?.toLowerCase();
 
+    return (
+      user.isAdmin !== true &&
+      email !== ADMIN_EMAIL.toLowerCase() &&
+      email !== "whisk1209@g.cnees.kr"
+    );
+  });
+}
 function getUserHits(user) {
   return Number(
     user.totalHits ||
