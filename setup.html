@@ -1,0 +1,22 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>챌린저컵 초기 설정</title><style>body{font-family:Arial,sans-serif;background:#f5f7fa;margin:0;color:#17202a}.box{max-width:650px;margin:70px auto;background:#fff;border:1px solid #e3e7ec;border-radius:20px;padding:35px}h1{margin-top:0}button{width:100%;padding:16px;margin-top:12px;border:0;border-radius:12px;background:#1468ff;color:#fff;font-weight:700;font-size:15px;cursor:pointer}button:disabled{background:#aeb5be}.danger{background:#d83b3b}#status{white-space:pre-wrap;background:#f2f4f7;padding:15px;border-radius:12px;min-height:60px;margin-top:18px;font-size:13px}.note{font-size:12px;color:#6f7882;line-height:1.6}</style></head><body><main class="box"><h1>제5회 챌린저컵 초기 설정</h1><p class="note">관리자 계정으로 로그인한 후 11경기를 한 번에 생성합니다. 기존 match01도 정확한 값으로 덮어씁니다. 한 번 성공한 뒤 이 파일은 GitHub 저장소에서 삭제하세요.</p><button id="login">관리자 Google 계정으로 로그인</button><button id="seed" disabled>11경기 데이터 생성</button><div id="status">로그인이 필요합니다.</div></main><script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js';
+import{getAuth,GoogleAuthProvider,signInWithPopup,signOut}from'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+import{getFirestore,doc,writeBatch,Timestamp}from'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+const firebaseConfig={apiKey:'AIzaSyBY2Vs1IG_hNSxm2_ImUwvHGK8W7B704Q8',authDomain:'challengercup-63049.firebaseapp.com',projectId:'challengercup-63049',storageBucket:'challengercup-63049.firebasestorage.app',messagingSenderId:'703139081412',appId:'1:703139081412:web:7ecc96136ea37cc91e2d91',measurementId:'G-YE8JWZRMXC'};
+const ADMIN='cnsh32_1218@g.cnees.kr';const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();provider.setCustomParameters({hd:'g.cnees.kr'});const status=document.querySelector('#status'),seed=document.querySelector('#seed');
+document.querySelector('#login').onclick=async()=>{try{const r=await signInWithPopup(auth,provider);if(r.user.email?.toLowerCase()!==ADMIN){await signOut(auth);throw new Error('지정된 관리자 계정이 아닙니다.')}seed.disabled=false;status.textContent=`관리자 로그인 완료: ${r.user.email}`;}catch(e){status.textContent=`로그인 실패: ${e.message}`;}};
+const matches=[
+['match01','1라운드','3-1','1-2','2026-08-20T12:50:00+09:00','점심',null],
+['match02','1라운드','3-4','1-1','2026-08-20T18:20:00+09:00','저녁',null],
+['match03','1라운드','1-4','2-4','2026-08-24T12:50:00+09:00','점심',null],
+['match04','1라운드','3-3','3-2','2026-08-24T18:20:00+09:00','저녁',null],
+['match05','8강','1-3','W1','2026-08-25T12:50:00+09:00','점심','1-3'],
+['match06','8강','W2','2-2','2026-08-25T18:20:00+09:00','저녁','2-2'],
+['match07','8강','2-1','W3','2026-08-26T18:20:00+09:00','저녁','2-1'],
+['match08','8강','W4','2-3','2026-08-27T12:50:00+09:00','점심','2-3'],
+['match09','준결승','W5','W6','2026-08-27T18:20:00+09:00','저녁',null],
+['match10','준결승','W7','W8','2026-08-31T12:50:00+09:00','점심',null],
+['match11','결승','W9','W10','2026-09-01T12:50:00+09:00','점심',null]
+];
+seed.onclick=async()=>{if(auth.currentUser?.email?.toLowerCase()!==ADMIN)return;seed.disabled=true;try{const batch=writeBatch(db);matches.forEach(([id,round,teamA,teamB,time,session,byeTeam],i)=>batch.set(doc(db,'matches',id),{matchNo:i+1,round,teamA,teamB,deadline:Timestamp.fromDate(new Date(time)),dateLabel:new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'long'}).format(new Date(time))+` ${session}`,session:session==='점심'?'lunch':'dinner',status:i===0?'open':'scheduled',winner:null,byeTeam}));await batch.commit();status.textContent='성공: match01부터 match11까지 모두 생성했습니다.\nFirestore에서 확인한 뒤 setup.html을 삭제하세요.';}catch(e){status.textContent=`생성 실패: ${e.message}\nFirestore 규칙이 setup용 규칙인지 확인하세요.`;seed.disabled=false;}};
+</script></body></html>
