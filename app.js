@@ -1600,10 +1600,12 @@ function createBracketMatch(match) {
 
 function getSortedRankingUsers() {
   return [...rankingUsers]
-
-    
     .filter((user) => {
-      return (user.isAdmin !== true &&user.email?.toLowerCase() !=="whisk1209@g.cnees.kr");
+      return (
+        user.isAdmin !== true &&
+        user.email?.toLowerCase() !==
+          "whisk1209@g.cnees.kr"
+      );
     })
     .sort((a, b) => {
       const hitDifference =
