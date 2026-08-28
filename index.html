@@ -19,9 +19,7 @@
 </head>
 
 <body>
-  <!-- =====================================================
-       상단 메뉴
-  ====================================================== -->
+  <!-- 상단 메뉴 -->
 
   <header class="top-header">
     <a
@@ -29,7 +27,10 @@
       class="brand"
       aria-label="챌린저컵 메인"
     >
-      <span class="brand-mark" aria-hidden="true"></span>
+      <span
+        class="brand-mark"
+        aria-hidden="true"
+      ></span>
 
       <span class="brand-title">
         CHALLENGER CUP
@@ -40,7 +41,10 @@
       </span>
     </a>
 
-    <nav class="main-nav" aria-label="주요 메뉴">
+    <nav
+      class="main-nav"
+      aria-label="주요 메뉴"
+    >
       <button
         type="button"
         class="nav-button active"
@@ -96,9 +100,7 @@
   </header>
 
 
-  <!-- =====================================================
-       안내 메시지
-  ====================================================== -->
+  <!-- 안내 메시지 -->
 
   <div
     id="appMessage"
@@ -110,9 +112,7 @@
 
 
   <main>
-    <!-- ===================================================
-         승부 예측
-    ==================================================== -->
+    <!-- 승부 예측 -->
 
     <section
       id="prediction"
@@ -147,13 +147,16 @@
           </div>
 
 
-          <!-- 로그인 전 안내 -->
+          <!-- 로그인 안내 -->
 
           <div
             id="loginNotice"
             class="login-notice"
           >
-            <div class="notice-icon" aria-hidden="true">
+            <div
+              class="notice-icon"
+              aria-hidden="true"
+            >
               ●
             </div>
 
@@ -183,7 +186,7 @@
 
             <p>
               더 이상 예측에는 참여할 수 없지만
-              대진표와 실시간 현황은 계속 볼 수 있습니다.
+              대진표와 랭킹은 계속 볼 수 있습니다.
             </p>
           </div>
 
@@ -217,7 +220,7 @@
           </div>
 
 
-          <!-- 경기 예측 카드 -->
+          <!-- 경기 선택 카드 -->
 
           <div
             id="matchGrid"
@@ -228,6 +231,219 @@
               경기 정보를 불러오는 중입니다.
             </div>
           </div>
+
+
+          <!-- 결승에서만 나타나는 세트별 점수 예측 -->
+
+          <section
+            id="finalPredictionPanel"
+            class="final-prediction-panel"
+            hidden
+          >
+            <div class="final-prediction-heading">
+              <div>
+                <span class="side-label">
+                  FINAL DETAIL
+                </span>
+
+                <h2>
+                  결승 세트별 점수 예측
+                </h2>
+              </div>
+
+              <p>
+                각 세트의 예상 점수를 입력해주세요.
+                점수가 높은 팀이 해당 세트 승리 팀으로 자동 결정됩니다.
+              </p>
+            </div>
+
+
+            <div class="final-set-grid">
+              <!-- 1세트 -->
+
+              <article class="final-set-card">
+                <span>SET 01</span>
+
+                <h3>
+                  1세트
+                </h3>
+
+                <div class="final-score-inputs">
+                  <label>
+                    <strong id="finalSet1TeamA">
+                      TEAM A
+                    </strong>
+
+                    <input
+                      type="number"
+                      id="finalSet1ScoreA"
+                      min="0"
+                      max="99"
+                      inputmode="numeric"
+                      placeholder="25"
+                      autocomplete="off"
+                    >
+                  </label>
+
+                  <span>:</span>
+
+                  <label>
+                    <strong id="finalSet1TeamB">
+                      TEAM B
+                    </strong>
+
+                    <input
+                      type="number"
+                      id="finalSet1ScoreB"
+                      min="0"
+                      max="99"
+                      inputmode="numeric"
+                      placeholder="21"
+                      autocomplete="off"
+                    >
+                  </label>
+                </div>
+
+                <p id="finalSet1Winner">
+                  점수를 입력해주세요.
+                </p>
+              </article>
+
+
+              <!-- 2세트 -->
+
+              <article class="final-set-card">
+                <span>SET 02</span>
+
+                <h3>
+                  2세트
+                </h3>
+
+                <div class="final-score-inputs">
+                  <label>
+                    <strong id="finalSet2TeamA">
+                      TEAM A
+                    </strong>
+
+                    <input
+                      type="number"
+                      id="finalSet2ScoreA"
+                      min="0"
+                      max="99"
+                      inputmode="numeric"
+                      placeholder="23"
+                      autocomplete="off"
+                    >
+                  </label>
+
+                  <span>:</span>
+
+                  <label>
+                    <strong id="finalSet2TeamB">
+                      TEAM B
+                    </strong>
+
+                    <input
+                      type="number"
+                      id="finalSet2ScoreB"
+                      min="0"
+                      max="99"
+                      inputmode="numeric"
+                      placeholder="25"
+                      autocomplete="off"
+                    >
+                  </label>
+                </div>
+
+                <p id="finalSet2Winner">
+                  점수를 입력해주세요.
+                </p>
+              </article>
+
+
+              <!-- 3세트 -->
+
+              <article
+                id="finalSet3Card"
+                class="final-set-card disabled"
+              >
+                <span>SET 03</span>
+
+                <h3>
+                  3세트
+                </h3>
+
+                <div class="final-score-inputs">
+                  <label>
+                    <strong id="finalSet3TeamA">
+                      TEAM A
+                    </strong>
+
+                    <input
+                      type="number"
+                      id="finalSet3ScoreA"
+                      min="0"
+                      max="99"
+                      inputmode="numeric"
+                      placeholder="15"
+                      autocomplete="off"
+                      disabled
+                    >
+                  </label>
+
+                  <span>:</span>
+
+                  <label>
+                    <strong id="finalSet3TeamB">
+                      TEAM B
+                    </strong>
+
+                    <input
+                      type="number"
+                      id="finalSet3ScoreB"
+                      min="0"
+                      max="99"
+                      inputmode="numeric"
+                      placeholder="12"
+                      autocomplete="off"
+                      disabled
+                    >
+                  </label>
+                </div>
+
+                <p id="finalSet3Winner">
+                  첫 두 세트를 나누어 이길 것으로 예측하면 활성화됩니다.
+                </p>
+              </article>
+            </div>
+
+
+            <!-- 예상 최종 승자 -->
+
+            <div class="final-winner-preview">
+              <span>
+                예상 결승 승리 팀
+              </span>
+
+              <strong id="predictedFinalWinner">
+                점수 입력 필요
+              </strong>
+            </div>
+
+
+            <div class="final-prediction-notice">
+              <strong>
+                입력 안내
+              </strong>
+
+              <p>
+                첫 두 세트를 같은 팀이 승리하도록 입력하면
+                2:0 승리로 처리되어 3세트는 진행하지 않습니다.
+                첫 두 세트의 승리 팀이 다르면 3세트 예상 점수를
+                반드시 입력해야 합니다.
+              </p>
+            </div>
+          </section>
 
 
           <!-- 일괄 제출 -->
@@ -266,9 +482,11 @@
         </div>
 
 
-        <!-- 오른쪽 요약 영역 -->
+        <!-- 오른쪽 영역 -->
 
         <aside class="side-panel">
+          <!-- 대진표 미리보기 -->
+
           <section class="side-card bracket-summary-card">
             <div class="side-card-heading">
               <div>
@@ -301,6 +519,8 @@
           </section>
 
 
+          <!-- TOP 5 -->
+
           <section class="side-card ranking-summary-card">
             <div class="side-card-heading">
               <div>
@@ -332,6 +552,8 @@
             </div>
           </section>
 
+
+          <!-- 나의 현황 -->
 
           <section class="side-card my-status-card">
             <div class="side-card-heading">
@@ -370,9 +592,7 @@
     </section>
 
 
-    <!-- ===================================================
-         전체 대진표
-    ==================================================== -->
+    <!-- 전체 대진표 -->
 
     <section
       id="bracket"
@@ -407,9 +627,7 @@
     </section>
 
 
-    <!-- ===================================================
-         전체 랭킹
-    ==================================================== -->
+    <!-- 전체 랭킹 -->
 
     <section
       id="ranking"
@@ -429,6 +647,7 @@
 
           <p>
             지금까지 맞힌 경기 수가 많은 순서입니다.
+            결승 종료 후 공동 1위에는 결승 세부 예측 기준을 적용합니다.
           </p>
         </div>
 
@@ -453,9 +672,7 @@
     </section>
 
 
-    <!-- ===================================================
-         참여방법
-    ==================================================== -->
+    <!-- 참여방법 -->
 
     <section
       id="guide"
@@ -478,8 +695,6 @@
           </p>
         </div>
 
-
-        <!-- 참여 절차 -->
 
         <div class="guide-grid">
           <article class="guide-card">
@@ -544,7 +759,48 @@
         </div>
 
 
-        <!-- 라운드별 예측 일정 -->
+        <!-- 결승 공동 1위 안내 -->
+
+        <section class="final-ranking-guide">
+          <div>
+            <span class="side-label">
+              FINAL TIEBREAK
+            </span>
+
+            <h2>
+              공동 1위 결정 기준
+            </h2>
+          </div>
+
+          <ol>
+            <li>
+              누적 적중 경기 수가 많은 참가자
+            </li>
+
+            <li>
+              결승 최종 승리 팀을 맞힌 참가자
+            </li>
+
+            <li>
+              세트별 승리 팀을 더 많이 맞힌 참가자
+            </li>
+
+            <li>
+              정확한 세트 점수를 더 많이 맞힌 참가자
+            </li>
+
+            <li>
+              실제 세트 점수와 예상 점수의 총 오차가 작은 참가자
+            </li>
+
+            <li>
+              모든 기준이 같으면 공동 1위 참가자를 대상으로 공개 추첨
+            </li>
+          </ol>
+        </section>
+
+
+        <!-- 라운드 일정 -->
 
         <section class="round-schedule-guide">
           <div class="round-schedule-heading">
@@ -559,7 +815,7 @@
             </div>
 
             <p>
-              각 라운드에 포함된 모든 경기의 승리 팀을
+              각 라운드의 모든 경기 승리 팀을
               해당 라운드 첫 경기 마감 전까지 한 번에 예측합니다.
             </p>
           </div>
@@ -573,8 +829,6 @@
               <span>통과 조건</span>
             </div>
 
-
-            <!-- 1라운드 -->
 
             <article class="round-schedule-row">
               <div class="round-schedule-name">
@@ -595,7 +849,7 @@
                 </strong>
 
                 <span>
-                  첫 경기 예측 마감
+                  예측 마감
                 </span>
               </div>
 
@@ -605,13 +859,11 @@
                 </strong>
 
                 <span>
-                  이상 적중 시 통과
+                  이상 적중
                 </span>
               </div>
             </article>
 
-
-            <!-- 2라운드 -->
 
             <article class="round-schedule-row">
               <div class="round-schedule-name">
@@ -621,29 +873,29 @@
 
               <div class="round-schedule-matches">
                 <span>
-                  1-3 VS (3-1·1-2 경기 승자)
+                  3-1 VS 1-3
                 </span>
 
                 <span>
-                  (3-4·1-1 경기 승자) VS 2-2
+                  1-1 VS 2-2
                 </span>
 
                 <span>
-                  2-1 VS (1-4·2-4 경기 승자)
+                  1-4 VS 2-1
                 </span>
 
                 <span>
-                  (3-3·3-2 경기 승자) VS 2-3
+                  3-3 VS 2-3
                 </span>
               </div>
 
               <div class="round-schedule-deadline">
                 <strong>
-                  8월 25일 12:50
+                  8월 25일 18:20
                 </strong>
 
                 <span>
-                  첫 경기 예측 마감
+                  예측 마감
                 </span>
               </div>
 
@@ -653,13 +905,11 @@
                 </strong>
 
                 <span>
-                  이상 적중 시 통과
+                  이상 적중
                 </span>
               </div>
             </article>
 
-
-            <!-- 준결승 -->
 
             <article class="round-schedule-row">
               <div class="round-schedule-name">
@@ -683,7 +933,7 @@
                 </strong>
 
                 <span>
-                  첫 준결승 예측 마감
+                  예측 마감
                 </span>
               </div>
 
@@ -693,13 +943,11 @@
                 </strong>
 
                 <span>
-                  이상 적중 시 통과
+                  이상 적중
                 </span>
               </div>
             </article>
 
-
-            <!-- 결승 -->
 
             <article class="round-schedule-row">
               <div class="round-schedule-name">
@@ -709,7 +957,11 @@
 
               <div class="round-schedule-matches">
                 <span>
-                  준결승 1경기 승자 VS 2경기 승자
+                  준결승 1경기 승자 VS 준결승 2경기 승자
+                </span>
+
+                <span>
+                  1·2·3세트 승리 팀 및 점수 예측
                 </span>
               </div>
 
@@ -719,7 +971,7 @@
                 </strong>
 
                 <span>
-                  결승 예측 마감
+                  예측 마감
                 </span>
               </div>
 
@@ -736,8 +988,6 @@
           </div>
 
 
-          <!-- 부전승 안내 -->
-
           <div class="round-schedule-notice">
             <strong>
               부전승 안내
@@ -745,14 +995,12 @@
 
             <p>
               1-3, 2-2, 2-1, 2-3은 1라운드 부전승 팀입니다.
-              부전승 자체는 예측 경기에 포함되지 않으며,
-              2라운드부터 1라운드 경기 승자와 대결합니다.
+              부전승 자체는 예측 경기에 포함되지 않으며
+              2라운드부터 경기에 참여합니다.
             </p>
           </div>
         </section>
 
-
-        <!-- 기본 마감시간 안내 -->
 
         <div class="deadline-guide">
           <div>
@@ -780,9 +1028,7 @@
   </main>
 
 
-  <!-- =====================================================
-       예측 제출 확인창
-  ====================================================== -->
+  <!-- 예측 제출 확인창 -->
 
   <div
     id="predictionModal"
@@ -813,13 +1059,21 @@
       </h2>
 
       <p>
-        선택한 경기 결과를 확인해주세요.
+        선택한 예측을 확인해주세요.
         마감 전에는 다시 수정할 수 있습니다.
       </p>
 
       <div
         id="modalPredictionList"
         class="modal-prediction-list"
+      ></div>
+
+      <!-- 결승 세부 예측 확인 -->
+
+      <div
+        id="modalFinalPrediction"
+        class="modal-final-prediction"
+        hidden
       ></div>
 
       <div class="modal-buttons">
