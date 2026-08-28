@@ -5,1115 +5,647 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
   >
 
-  <meta
-    name="description"
-    content="제5회 챌린저컵 배구대회 승부 예측"
-  >
+  <meta name="theme-color" content="#f4f6f8">
 
-  <title>제5회 챌린저컵 승부 예측</title>
+  <title>챌린저컵 관리자</title>
 
   <link rel="stylesheet" href="./style.css">
 </head>
 
-<body>
+<body class="admin-body">
   <!-- 상단 메뉴 -->
-
-  <header class="top-header">
-    <a
-      href="#prediction"
-      class="brand"
-      aria-label="챌린저컵 메인"
-    >
-      <span
-        class="brand-mark"
-        aria-hidden="true"
-      ></span>
-
-      <span class="brand-title">
-        CHALLENGER CUP
-      </span>
-
-      <span class="brand-sport">
-        VOLLEYBALL
-      </span>
+  <header class="site-header">
+    <a class="brand" href="./index.html">
+      <span class="brand-mark"></span>
+      <span class="brand-title">CHALLENGER CUP</span>
+      <span class="brand-divider"></span>
+      <span class="brand-subtitle">ADMIN</span>
     </a>
 
-    <nav
-      class="main-nav"
-      aria-label="주요 메뉴"
-    >
+    <nav class="main-nav" aria-label="관리자 메뉴">
       <button
         type="button"
         class="nav-button active"
-        data-page-target="prediction"
+        data-admin-page="dashboard"
       >
-        승부예측
+        대시보드
       </button>
 
       <button
         type="button"
         class="nav-button"
-        data-page-target="bracket"
+        data-admin-page="matches"
       >
-        대진표
+        경기 관리
       </button>
 
       <button
         type="button"
         class="nav-button"
-        data-page-target="ranking"
+        data-admin-page="participants"
       >
-        랭킹
+        참가자
       </button>
 
-      <button
-        type="button"
-        class="nav-button"
-        data-page-target="guide"
-      >
-        참여방법
-      </button>
+      <a class="nav-button" href="./index.html">
+        사용자 화면
+      </a>
     </nav>
 
     <div class="header-account">
-      <div class="account-text">
-        <strong id="headerUserName">
-          로그인 필요
-        </strong>
-
-        <span id="headerUserEmail">
-          g.cnees.kr
-        </span>
+      <div
+        id="adminAccountInfo"
+        class="account-info"
+        hidden
+      >
+        <strong id="adminAccountName">관리자</strong>
+        <span id="adminAccountEmail"></span>
       </div>
 
       <button
         type="button"
-        id="loginBtn"
-        class="login-button"
+        id="adminLoginBtn"
+        class="header-login-button"
       >
-        학교 계정 로그인
+        관리자 로그인
       </button>
     </div>
   </header>
 
-
-  <!-- 안내 메시지 -->
-
-  <div
-    id="appMessage"
-    class="app-message"
-    role="status"
-    aria-live="polite"
-    hidden
-  ></div>
-
-
-  <main>
-    <!-- 승부 예측 -->
-
+  <main class="admin-main">
+    <!-- 로그인 전 -->
     <section
-      id="prediction"
-      class="page-section active"
-      data-page="prediction"
+      id="adminLoginScreen"
+      class="admin-login-screen"
     >
-      <div class="main-layout">
-        <!-- 왼쪽 예측 영역 -->
-
-        <div class="prediction-panel">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">
-                제5회 챌린저컵
-              </p>
-
-              <h1 id="currentRoundTitle">
-                경기 정보를 불러오는 중입니다
-              </h1>
-
-              <p id="currentRoundDescription">
-                라운드의 모든 경기 결과를 한 번에 예측합니다.
-              </p>
-            </div>
-
-            <div
-              id="roundStatusBadge"
-              class="round-status-badge"
-            >
-              확인 중
-            </div>
-          </div>
-
-
-          <!-- 로그인 안내 -->
-
-          <div
-            id="loginNotice"
-            class="login-notice"
-          >
-            <div
-              class="notice-icon"
-              aria-hidden="true"
-            >
-              ●
-            </div>
-
-            <div>
-              <strong>
-                학교 Google 계정으로 로그인해주세요
-              </strong>
-
-              <p>
-                g.cnees.kr 계정으로 로그인한 학생만
-                승부 예측에 참여할 수 있습니다.
-              </p>
-            </div>
-          </div>
-
-
-          <!-- 탈락 안내 -->
-
-          <div
-            id="eliminatedNotice"
-            class="eliminated-notice"
-            hidden
-          >
-            <strong>
-              이번 챌린저컵 도전이 종료되었습니다
-            </strong>
-
-            <p>
-              더 이상 예측에는 참여할 수 없지만
-              대진표와 랭킹은 계속 볼 수 있습니다.
-            </p>
-          </div>
-
-
-          <!-- 현재 라운드 정보 -->
-
-          <div class="round-information">
-            <div class="round-info-item">
-              <span>예측 마감</span>
-
-              <strong id="roundDeadline">
-                확인 중
-              </strong>
-            </div>
-
-            <div class="round-info-item">
-              <span>통과 조건</span>
-
-              <strong id="roundRequirement">
-                확인 중
-              </strong>
-            </div>
-
-            <div class="round-info-item">
-              <span>현재 상태</span>
-
-              <strong id="myRoundState">
-                로그인 후 확인
-              </strong>
-            </div>
-          </div>
-
-
-          <!-- 경기 선택 카드 -->
-
-          <div
-            id="matchGrid"
-            class="round-match-grid"
-            aria-live="polite"
-          >
-            <div class="loading-card">
-              경기 정보를 불러오는 중입니다.
-            </div>
-          </div>
-
-
-          <!-- 결승에서만 나타나는 세트별 점수 예측 -->
-
-          <section
-            id="finalPredictionPanel"
-            class="final-prediction-panel"
-            hidden
-          >
-            <div class="final-prediction-heading">
-              <div>
-                <span class="side-label">
-                  FINAL DETAIL
-                </span>
-
-                <h2>
-                  결승 세트별 점수 예측
-                </h2>
-              </div>
-
-              <p>
-                각 세트의 예상 점수를 입력해주세요.
-                점수가 높은 팀이 해당 세트 승리 팀으로 자동 결정됩니다.
-              </p>
-            </div>
-
-
-            <div class="final-set-grid">
-              <!-- 1세트 -->
-
-              <article class="final-set-card">
-                <span>SET 01</span>
-
-                <h3>
-                  1세트
-                </h3>
-
-                <div class="final-score-inputs">
-                  <label>
-                    <strong id="finalSet1TeamA">
-                      TEAM A
-                    </strong>
-
-                    <input
-                      type="number"
-                      id="finalSet1ScoreA"
-                      min="0"
-                      max="99"
-                      inputmode="numeric"
-                      placeholder="25"
-                      autocomplete="off"
-                    >
-                  </label>
-
-                  <span>:</span>
-
-                  <label>
-                    <strong id="finalSet1TeamB">
-                      TEAM B
-                    </strong>
-
-                    <input
-                      type="number"
-                      id="finalSet1ScoreB"
-                      min="0"
-                      max="99"
-                      inputmode="numeric"
-                      placeholder="21"
-                      autocomplete="off"
-                    >
-                  </label>
-                </div>
-
-                <p id="finalSet1Winner">
-                  점수를 입력해주세요.
-                </p>
-              </article>
-
-
-              <!-- 2세트 -->
-
-              <article class="final-set-card">
-                <span>SET 02</span>
-
-                <h3>
-                  2세트
-                </h3>
-
-                <div class="final-score-inputs">
-                  <label>
-                    <strong id="finalSet2TeamA">
-                      TEAM A
-                    </strong>
-
-                    <input
-                      type="number"
-                      id="finalSet2ScoreA"
-                      min="0"
-                      max="99"
-                      inputmode="numeric"
-                      placeholder="23"
-                      autocomplete="off"
-                    >
-                  </label>
-
-                  <span>:</span>
-
-                  <label>
-                    <strong id="finalSet2TeamB">
-                      TEAM B
-                    </strong>
-
-                    <input
-                      type="number"
-                      id="finalSet2ScoreB"
-                      min="0"
-                      max="99"
-                      inputmode="numeric"
-                      placeholder="25"
-                      autocomplete="off"
-                    >
-                  </label>
-                </div>
-
-                <p id="finalSet2Winner">
-                  점수를 입력해주세요.
-                </p>
-              </article>
-
-
-              <!-- 3세트 -->
-
-              <article
-                id="finalSet3Card"
-                class="final-set-card disabled"
-              >
-                <span>SET 03</span>
-
-                <h3>
-                  3세트
-                </h3>
-
-                <div class="final-score-inputs">
-                  <label>
-                    <strong id="finalSet3TeamA">
-                      TEAM A
-                    </strong>
-
-                    <input
-                      type="number"
-                      id="finalSet3ScoreA"
-                      min="0"
-                      max="99"
-                      inputmode="numeric"
-                      placeholder="15"
-                      autocomplete="off"
-                      disabled
-                    >
-                  </label>
-
-                  <span>:</span>
-
-                  <label>
-                    <strong id="finalSet3TeamB">
-                      TEAM B
-                    </strong>
-
-                    <input
-                      type="number"
-                      id="finalSet3ScoreB"
-                      min="0"
-                      max="99"
-                      inputmode="numeric"
-                      placeholder="12"
-                      autocomplete="off"
-                      disabled
-                    >
-                  </label>
-                </div>
-
-                <p id="finalSet3Winner">
-                  첫 두 세트를 나누어 이길 것으로 예측하면 활성화됩니다.
-                </p>
-              </article>
-            </div>
-
-
-            <!-- 예상 최종 승자 -->
-
-            <div class="final-winner-preview">
-              <span>
-                예상 결승 승리 팀
-              </span>
-
-              <strong id="predictedFinalWinner">
-                점수 입력 필요
-              </strong>
-            </div>
-
-
-            <div class="final-prediction-notice">
-              <strong>
-                입력 안내
-              </strong>
-
-              <p>
-                첫 두 세트를 같은 팀이 승리하도록 입력하면
-                2:0 승리로 처리되어 3세트는 진행하지 않습니다.
-                첫 두 세트의 승리 팀이 다르면 3세트 예상 점수를
-                반드시 입력해야 합니다.
-              </p>
-            </div>
-          </section>
-
-
-          <!-- 일괄 제출 -->
-
-          <div class="round-submit-area">
-            <div class="selection-progress">
-              <span>
-                선택한 경기
-              </span>
-
-              <strong id="selectionCount">
-                0 / 0
-              </strong>
-            </div>
-
-            <p
-              id="submitHelp"
-              class="submit-help"
-            >
-              모든 경기의 승리 팀을 선택하면 제출할 수 있습니다.
-            </p>
-
-            <button
-              type="button"
-              id="submitRoundBtn"
-              class="round-submit-button"
-              disabled
-            >
-              예측 한 번에 제출하기
-            </button>
-
-            <p class="submit-warning">
-              마감 전까지는 선택을 수정하여 다시 제출할 수 있습니다.
-            </p>
-          </div>
-        </div>
-
-
-        <!-- 오른쪽 영역 -->
-
-        <aside class="side-panel">
-          <!-- 대진표 미리보기 -->
-
-          <section class="side-card bracket-summary-card">
-            <div class="side-card-heading">
-              <div>
-                <span class="side-label">
-                  BRACKET
-                </span>
-
-                <h2>
-                  대진표
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                class="text-link-button"
-                data-page-target="bracket"
-              >
-                전체보기
-              </button>
-            </div>
-
-            <div
-              id="bracketPreview"
-              class="bracket-preview"
-            >
-              <p class="empty-text">
-                대진 정보를 불러오는 중입니다.
-              </p>
-            </div>
-          </section>
-
-
-          <!-- TOP 5 -->
-
-          <section class="side-card ranking-summary-card">
-            <div class="side-card-heading">
-              <div>
-                <span class="side-label">
-                  LEADERBOARD
-                </span>
-
-                <h2>
-                  적중 랭킹 TOP 5
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                class="text-link-button"
-                data-page-target="ranking"
-              >
-                전체보기
-              </button>
-            </div>
-
-            <div
-              id="topRanking"
-              class="ranking-preview"
-            >
-              <p class="empty-text">
-                아직 집계 전입니다.
-              </p>
-            </div>
-          </section>
-
-
-          <!-- 나의 현황 -->
-
-          <section class="side-card my-status-card">
-            <div class="side-card-heading">
-              <div>
-                <span class="side-label">
-                  MY RECORD
-                </span>
-
-                <h2>
-                  나의 도전 현황
-                </h2>
-              </div>
-            </div>
-
-            <div
-              id="myStatus"
-              class="my-status-content"
-            >
-              <div class="status-number">
-                <strong id="myTotalHits">
-                  0
-                </strong>
-
-                <span>
-                  HITS
-                </span>
-              </div>
-
-              <p id="myStatusMessage">
-                로그인 후 확인할 수 있습니다.
-              </p>
-            </div>
-          </section>
-        </aside>
-      </div>
-    </section>
-
-
-    <!-- 전체 대진표 -->
-
-    <section
-      id="bracket"
-      class="page-section"
-      data-page="bracket"
-      hidden
-    >
-      <div class="content-container">
-        <div class="page-heading">
-          <p class="eyebrow">
-            TOURNAMENT
-          </p>
-
-          <h1>
-            전체 대진표
-          </h1>
-
-          <p>
-            12개 팀이 우승까지 펼치는 총 11경기
-          </p>
-        </div>
-
-        <div
-          id="fullBracket"
-          class="full-bracket"
+      <div class="admin-login-card">
+        <p class="eyebrow">CHALLENGER CUP</p>
+
+        <h1>관리자 페이지</h1>
+
+        <p>
+          경기 결과 확정, 실시간 예측 현황, 참가자 통과 여부를
+          관리할 수 있습니다.
+        </p>
+
+        <button
+          type="button"
+          id="adminLoginMainBtn"
+          class="primary-button"
         >
-          <p class="empty-text">
-            대진 정보를 불러오는 중입니다.
-          </p>
-        </div>
+          학교 계정으로 관리자 로그인
+        </button>
+
+        <p class="admin-login-notice">
+          <strong>cnsh32_1218@g.cnees.kr</strong><br>
+          위 계정만 관리자 페이지에 접근할 수 있습니다.
+        </p>
       </div>
     </section>
 
-
-    <!-- 전체 랭킹 -->
-
-    <section
-      id="ranking"
-      class="page-section"
-      data-page="ranking"
-      hidden
-    >
-      <div class="content-container">
-        <div class="page-heading">
-          <p class="eyebrow">
-            LEADERBOARD
-          </p>
-
-          <h1>
-            적중 랭킹
-          </h1>
-
-          <p>
-            지금까지 맞힌 경기 수가 많은 순서입니다.
-            결승 종료 후 공동 1위에는 결승 세부 예측 기준을 적용합니다.
-          </p>
-        </div>
-
-        <div class="ranking-card">
-          <div class="ranking-table-head">
-            <span>순위</span>
-            <span>참가자</span>
-            <span>적중</span>
-            <span>상태</span>
+    <!-- 로그인 후 -->
+    <section id="adminDashboard" hidden>
+      <!-- 대시보드 -->
+      <section
+        id="adminPageDashboard"
+        class="admin-page"
+        data-admin-page-panel="dashboard"
+      >
+        <div class="admin-page-heading">
+          <div>
+            <p class="eyebrow">ADMIN DASHBOARD</p>
+            <h1>대회 운영 현황</h1>
+            <p>
+              경기 결과를 확정한 뒤 라운드 정산을 진행하세요.
+            </p>
           </div>
 
-          <div
-            id="fullRanking"
-            class="full-ranking"
+          <button
+            type="button"
+            id="setupTournamentBtn"
+            class="secondary-button"
           >
-            <p class="empty-text">
-              아직 집계 전입니다.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-
-    <!-- 참여방법 -->
-
-    <section
-      id="guide"
-      class="page-section"
-      data-page="guide"
-      hidden
-    >
-      <div class="content-container">
-        <div class="page-heading">
-          <p class="eyebrow">
-            HOW TO PLAY
-          </p>
-
-          <h1>
-            목숨은 단 한 번
-          </h1>
-
-          <p>
-            라운드별 통과 기준을 넘겨 마지막까지 살아남으세요.
-          </p>
+            대회 데이터 확인
+          </button>
         </div>
 
-
-        <div class="guide-grid">
-          <article class="guide-card">
-            <span class="guide-number">
-              01
-            </span>
-
-            <h2>
-              학교 계정 로그인
-            </h2>
-
-            <p>
-              g.cnees.kr Google 계정으로 로그인합니다.
-              학생 한 명당 하나의 계정만 참여할 수 있습니다.
-            </p>
+        <section class="admin-stat-grid">
+          <article class="admin-stat-card">
+            <span>전체 참가자</span>
+            <strong id="adminTotalParticipants">0</strong>
           </article>
 
-          <article class="guide-card">
-            <span class="guide-number">
-              02
-            </span>
-
-            <h2>
-              한 라운드씩 예측
-            </h2>
-
-            <p>
-              해당 라운드의 모든 경기 승리 팀을 선택한 뒤
-              한 번에 제출합니다.
-            </p>
+          <article class="admin-stat-card">
+            <span>현재 생존자</span>
+            <strong id="adminAliveParticipants">0</strong>
           </article>
 
-          <article class="guide-card">
-            <span class="guide-number">
-              03
-            </span>
-
-            <h2>
-              통과 기준 달성
-            </h2>
-
-            <p>
-              1·2라운드는 4경기 중 3경기,
-              준결승은 2경기 중 1경기 이상 맞혀야 합니다.
-            </p>
+          <article class="admin-stat-card">
+            <span>완료된 경기</span>
+            <strong id="adminCompletedMatches">0</strong>
           </article>
 
-          <article class="guide-card">
-            <span class="guide-number">
-              04
-            </span>
-
-            <h2>
-              마지막까지 생존
-            </h2>
-
-            <p>
-              결승전까지 통과하면 최종 생존자가 됩니다.
-              랭킹은 누적 적중 경기 수를 기준으로 표시됩니다.
-            </p>
+          <article class="admin-stat-card">
+            <span>전체 예측 제출</span>
+            <strong id="adminTotalPredictions">0</strong>
           </article>
-        </div>
-
-
-        <!-- 결승 공동 1위 안내 -->
-
-        <section class="final-ranking-guide">
-          <div>
-            <span class="side-label">
-              FINAL TIEBREAK
-            </span>
-
-            <h2>
-              공동 1위 결정 기준
-            </h2>
-          </div>
-
-          <ol>
-            <li>
-              누적 적중 경기 수가 많은 참가자
-            </li>
-
-            <li>
-              결승 최종 승리 팀을 맞힌 참가자
-            </li>
-
-            <li>
-              세트별 승리 팀을 더 많이 맞힌 참가자
-            </li>
-
-            <li>
-              정확한 세트 점수를 더 많이 맞힌 참가자
-            </li>
-
-            <li>
-              실제 세트 점수와 예상 점수의 총 오차가 작은 참가자
-            </li>
-
-            <li>
-              모든 기준이 같으면 공동 1위 참가자를 대상으로 공개 추첨
-            </li>
-          </ol>
         </section>
 
-
-        <!-- 라운드 일정 -->
-
-        <section class="round-schedule-guide">
-          <div class="round-schedule-heading">
-            <div>
-              <span class="side-label">
-                ROUND SCHEDULE
-              </span>
-
-              <h2>
-                라운드별 예측 일정
-              </h2>
-            </div>
-
-            <p>
-              각 라운드의 모든 경기 승리 팀을
-              해당 라운드 첫 경기 마감 전까지 한 번에 예측합니다.
-            </p>
-          </div>
-
-
-          <div class="round-schedule-table">
-            <div class="round-schedule-head">
-              <span>라운드</span>
-              <span>예측 경기</span>
-              <span>마감시간</span>
-              <span>통과 조건</span>
-            </div>
-
-
-            <article class="round-schedule-row">
-              <div class="round-schedule-name">
-                <span>ROUND 01</span>
-                <strong>1라운드</strong>
+        <section class="admin-dashboard-grid">
+          <div class="admin-dashboard-main">
+            <!-- 현재 라운드 -->
+            <article class="admin-panel">
+              <div class="admin-panel-heading">
+                <div>
+                  <p class="eyebrow">CURRENT ROUND</p>
+                  <h2>현재 라운드</h2>
+                </div>
               </div>
 
-              <div class="round-schedule-matches">
-                <span>3-1 VS 1-2</span>
-                <span>3-4 VS 1-1</span>
-                <span>1-4 VS 2-4</span>
-                <span>3-3 VS 3-2</span>
-              </div>
-
-              <div class="round-schedule-deadline">
-                <strong>
-                  8월 20일 12:50
-                </strong>
-
-                <span>
-                  예측 마감
-                </span>
-              </div>
-
-              <div class="round-schedule-pass">
-                <strong>
-                  4경기 중 3경기
-                </strong>
-
-                <span>
-                  이상 적중
-                </span>
+              <div id="currentRoundAdminCard">
+                현재 라운드를 불러오는 중입니다.
               </div>
             </article>
 
+            <!-- 실시간 비율 -->
+            <article class="admin-panel">
+              <div class="admin-panel-heading">
+                <div>
+                  <p class="eyebrow">LIVE PREDICTION</p>
+                  <h2>실시간 예측 비율</h2>
+                </div>
 
-            <article class="round-schedule-row">
-              <div class="round-schedule-name">
-                <span>ROUND 02</span>
-                <strong>2라운드</strong>
-              </div>
-
-              <div class="round-schedule-matches">
-                <span>
-                  3-1 VS 1-3
-                </span>
-
-                <span>
-                  1-1 VS 2-2
-                </span>
-
-                <span>
-                  1-4 VS 2-1
-                </span>
-
-                <span>
-                  3-3 VS 2-3
+                <span class="live-badge">
+                  <span class="live-dot"></span>
+                  LIVE
                 </span>
               </div>
 
-              <div class="round-schedule-deadline">
-                <strong>
-                  8월 25일 18:20
-                </strong>
-
-                <span>
-                  예측 마감
-                </span>
-              </div>
-
-              <div class="round-schedule-pass">
-                <strong>
-                  4경기 중 3경기
-                </strong>
-
-                <span>
-                  이상 적중
-                </span>
-              </div>
-            </article>
-
-
-            <article class="round-schedule-row">
-              <div class="round-schedule-name">
-                <span>SEMIFINAL</span>
-                <strong>준결승</strong>
-              </div>
-
-              <div class="round-schedule-matches">
-                <span>
-                  2라운드 1경기 승자 VS 2경기 승자
-                </span>
-
-                <span>
-                  2라운드 3경기 승자 VS 4경기 승자
-                </span>
-              </div>
-
-              <div class="round-schedule-deadline">
-                <strong>
-                  8월 27일 18:20
-                </strong>
-
-                <span>
-                  예측 마감
-                </span>
-              </div>
-
-              <div class="round-schedule-pass">
-                <strong>
-                  2경기 중 1경기
-                </strong>
-
-                <span>
-                  이상 적중
-                </span>
-              </div>
-            </article>
-
-
-            <article class="round-schedule-row">
-              <div class="round-schedule-name">
-                <span>FINAL</span>
-                <strong>결승</strong>
-              </div>
-
-              <div class="round-schedule-matches">
-                <span>
-                  준결승 1경기 승자 VS 준결승 2경기 승자
-                </span>
-
-                <span>
-                  1·2·3세트 승리 팀 및 점수 예측
-                </span>
-              </div>
-
-              <div class="round-schedule-deadline">
-                <strong>
-                  9월 1일 12:50
-                </strong>
-
-                <span>
-                  예측 마감
-                </span>
-              </div>
-
-              <div class="round-schedule-pass">
-                <strong>
-                  결승전 적중
-                </strong>
-
-                <span>
-                  최종 생존
-                </span>
+              <div
+                id="livePredictionGrid"
+                class="live-prediction-grid"
+              >
+                예측 정보를 불러오는 중입니다.
               </div>
             </article>
           </div>
 
+          <aside class="admin-dashboard-side">
+            <!-- 관리자 랭킹 -->
+            <article class="admin-panel">
+              <div class="admin-panel-heading">
+                <div>
+                  <p class="eyebrow">LEADERBOARD</p>
+                  <h2>적중 랭킹 TOP 5</h2>
+                </div>
+              </div>
 
-          <div class="round-schedule-notice">
-            <strong>
-              부전승 안내
-            </strong>
+              <div id="adminTopRanking">
+                아직 집계 전입니다.
+              </div>
+            </article>
 
-            <p>
-              1-3, 2-2, 2-1, 2-3은 1라운드 부전승 팀입니다.
-              부전승 자체는 예측 경기에 포함되지 않으며
-              2라운드부터 경기에 참여합니다.
-            </p>
-          </div>
+            <!-- 관리 방법 -->
+            <article class="admin-panel">
+              <div class="admin-panel-heading">
+                <div>
+                  <p class="eyebrow">QUICK GUIDE</p>
+                  <h2>관리 순서</h2>
+                </div>
+              </div>
+
+              <ol class="admin-guide-list">
+                <li>경기 종료 후 경기 관리에서 승리 팀을 선택합니다.</li>
+                <li>결승은 실제 세트별 점수도 입력합니다.</li>
+                <li>모든 경기 결과를 확정합니다.</li>
+                <li>현재 라운드에서 라운드 정산을 실행합니다.</li>
+                <li>다음 라운드 대진이 연결됐는지 확인합니다.</li>
+              </ol>
+            </article>
+          </aside>
         </section>
+      </section>
 
-
-        <div class="deadline-guide">
+      <!-- 경기 관리 -->
+      <section
+        id="adminPageMatches"
+        class="admin-page"
+        data-admin-page-panel="matches"
+        hidden
+      >
+        <div class="admin-page-heading">
           <div>
-            <span>
-              점심 경기
-            </span>
+            <p class="eyebrow">MATCH CONTROL</p>
+            <h1>경기 관리</h1>
 
-            <strong>
-              12시 50분 전까지
-            </strong>
-          </div>
-
-          <div>
-            <span>
-              저녁 경기
-            </span>
-
-            <strong>
-              오후 6시 20분 전까지
-            </strong>
+            <p>
+              실제로 승리한 팀을 선택해 경기 결과를 확정하세요.
+            </p>
           </div>
         </div>
-      </div>
+
+        <div id="adminRoundList" class="admin-round-list">
+          경기 정보를 불러오는 중입니다.
+        </div>
+      </section>
+
+      <!-- 참가자 -->
+      <section
+        id="adminPageParticipants"
+        class="admin-page"
+        data-admin-page-panel="participants"
+        hidden
+      >
+        <div class="admin-page-heading">
+          <div>
+            <p class="eyebrow">PARTICIPANTS</p>
+            <h1>참가자 현황</h1>
+
+            <p>
+              참가자의 전체 적중 수와 생존 상태를 확인합니다.
+            </p>
+          </div>
+        </div>
+
+        <article class="admin-panel">
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>순위</th>
+                  <th>참가자</th>
+                  <th>적중</th>
+                  <th>현재 라운드</th>
+                  <th>상태</th>
+                </tr>
+              </thead>
+
+              <tbody id="adminParticipantList">
+                <tr>
+                  <td colspan="5">
+                    참가자 정보를 불러오는 중입니다.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
     </section>
   </main>
 
-
-  <!-- 예측 제출 확인창 -->
-
+  <!-- 데이터 확인 모달 -->
   <div
-    id="predictionModal"
+    id="setupModal"
     class="modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="setupModalTitle"
     hidden
   >
-    <div
-      class="prediction-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modalTitle"
-    >
-      <button
-        type="button"
-        id="closeModalBtn"
-        class="modal-close-button"
-        aria-label="창 닫기"
-      >
-        ×
-      </button>
+    <div class="modal-card">
+      <div class="modal-heading">
+        <div>
+          <p class="eyebrow">TOURNAMENT DATA</p>
+          <h2 id="setupModalTitle">대회 데이터 확인</h2>
+        </div>
 
-      <p class="eyebrow">
-        FINAL CHECK
-      </p>
-
-      <h2 id="modalTitle">
-        예측을 제출할까요?
-      </h2>
-
-      <p>
-        선택한 예측을 확인해주세요.
-        마감 전에는 다시 수정할 수 있습니다.
-      </p>
-
-      <div
-        id="modalPredictionList"
-        class="modal-prediction-list"
-      ></div>
-
-      <!-- 결승 세부 예측 확인 -->
-
-      <div
-        id="modalFinalPrediction"
-        class="modal-final-prediction"
-        hidden
-      ></div>
-
-      <div class="modal-buttons">
         <button
           type="button"
-          id="cancelSubmitBtn"
-          class="modal-cancel-button"
+          class="modal-close"
+          data-close-modal="setupModal"
+          aria-label="닫기"
         >
-          다시 확인
+          ×
         </button>
+      </div>
 
+      <div class="modal-content">
+        <p>
+          기존 경기·참가자·예측 데이터는 삭제되지 않습니다.
+        </p>
+
+        <div id="setupStatus" class="admin-message-box">
+          Firebase 데이터를 확인하는 중입니다.
+        </div>
+      </div>
+
+      <div class="modal-actions">
         <button
           type="button"
-          id="confirmSubmitBtn"
-          class="modal-confirm-button"
+          class="secondary-button"
+          data-close-modal="setupModal"
         >
-          예측 제출
+          닫기
         </button>
       </div>
     </div>
   </div>
 
+  <!-- 경기 결과 확정 모달 -->
+  <div
+    id="matchResultModal"
+    class="modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="matchResultTitle"
+    hidden
+  >
+    <div class="modal-card modal-card-wide">
+      <div class="modal-heading">
+        <div>
+          <p class="eyebrow">MATCH RESULT</p>
+          <h2 id="matchResultTitle">경기 결과 확정</h2>
+        </div>
 
-  <footer class="site-footer">
-    <p>
-      제5회 챌린저컵 · 충남과학고등학교
-    </p>
+        <button
+          type="button"
+          class="modal-close"
+          data-close-modal="matchResultModal"
+          aria-label="닫기"
+        >
+          ×
+        </button>
+      </div>
 
-    <a
-      href="./admin.html"
-      class="admin-link"
-    >
-      관리자
-    </a>
-  </footer>
+      <div class="modal-content">
+        <p id="matchResultDescription">
+          승리 팀을 확인한 뒤 결과를 확정하세요.
+        </p>
 
+        <div
+          id="matchResultSummary"
+          class="match-result-summary"
+        ></div>
 
-  <script
-    type="module"
-    src="./app.js"
-  ></script>
+        <!-- 결승일 때만 표시 -->
+        <section
+          id="adminFinalScorePanel"
+          class="admin-final-score-panel"
+          hidden
+        >
+          <div class="admin-final-score-heading">
+            <div>
+              <p class="eyebrow">FINAL SET RESULT</p>
+              <h3>결승 실제 세트별 점수</h3>
+            </div>
+
+            <div class="admin-final-team-heading">
+              <strong id="actualFinalTeamA">TEAM A</strong>
+              <span>VS</span>
+              <strong id="actualFinalTeamB">TEAM B</strong>
+            </div>
+          </div>
+
+          <p id="adminFinalScoreHelp" class="form-help">
+            1·2세트 승리 팀이 서로 다르면 3세트 점수도
+            입력해야 합니다.
+          </p>
+
+          <div class="admin-final-set-list">
+            <!-- 1세트 -->
+            <article class="admin-final-set-card">
+              <div class="admin-final-set-title">
+                <strong>1세트</strong>
+                <span id="actualSet1Winner">
+                  점수를 입력하세요.
+                </span>
+              </div>
+
+              <div class="admin-final-score-inputs">
+                <label>
+                  <span id="actualSet1TeamALabel">TEAM A</span>
+
+                  <input
+                    type="number"
+                    id="actualSet1ScoreA"
+                    min="0"
+                    max="99"
+                    inputmode="numeric"
+                    placeholder="0"
+                    autocomplete="off"
+                  >
+                </label>
+
+                <span class="score-divider">:</span>
+
+                <label>
+                  <span id="actualSet1TeamBLabel">TEAM B</span>
+
+                  <input
+                    type="number"
+                    id="actualSet1ScoreB"
+                    min="0"
+                    max="99"
+                    inputmode="numeric"
+                    placeholder="0"
+                    autocomplete="off"
+                  >
+                </label>
+              </div>
+            </article>
+
+            <!-- 2세트 -->
+            <article class="admin-final-set-card">
+              <div class="admin-final-set-title">
+                <strong>2세트</strong>
+                <span id="actualSet2Winner">
+                  점수를 입력하세요.
+                </span>
+              </div>
+
+              <div class="admin-final-score-inputs">
+                <label>
+                  <span id="actualSet2TeamALabel">TEAM A</span>
+
+                  <input
+                    type="number"
+                    id="actualSet2ScoreA"
+                    min="0"
+                    max="99"
+                    inputmode="numeric"
+                    placeholder="0"
+                    autocomplete="off"
+                  >
+                </label>
+
+                <span class="score-divider">:</span>
+
+                <label>
+                  <span id="actualSet2TeamBLabel">TEAM B</span>
+
+                  <input
+                    type="number"
+                    id="actualSet2ScoreB"
+                    min="0"
+                    max="99"
+                    inputmode="numeric"
+                    placeholder="0"
+                    autocomplete="off"
+                  >
+                </label>
+              </div>
+            </article>
+
+            <!-- 3세트 -->
+            <article
+              id="actualSet3Card"
+              class="admin-final-set-card"
+            >
+              <div class="admin-final-set-title">
+                <strong>3세트</strong>
+
+                <span id="actualSet3Winner">
+                  1·2세트 결과에 따라 입력
+                </span>
+              </div>
+
+              <div class="admin-final-score-inputs">
+                <label>
+                  <span id="actualSet3TeamALabel">TEAM A</span>
+
+                  <input
+                    type="number"
+                    id="actualSet3ScoreA"
+                    min="0"
+                    max="99"
+                    inputmode="numeric"
+                    placeholder="0"
+                    autocomplete="off"
+                  >
+                </label>
+
+                <span class="score-divider">:</span>
+
+                <label>
+                  <span id="actualSet3TeamBLabel">TEAM B</span>
+
+                  <input
+                    type="number"
+                    id="actualSet3ScoreB"
+                    min="0"
+                    max="99"
+                    inputmode="numeric"
+                    placeholder="0"
+                    autocomplete="off"
+                  >
+                </label>
+              </div>
+            </article>
+          </div>
+
+          <div class="admin-final-winner-box">
+            <span>실제 결승 승리 팀</span>
+            <strong id="actualFinalWinner">점수 입력 전</strong>
+          </div>
+        </section>
+
+        <div
+          id="matchResultWarning"
+          class="admin-warning-box"
+        >
+          결과 확정 후 라운드를 정산하면 참가자의 적중 수와
+          통과 상태가 변경됩니다.
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          id="cancelMatchResultBtn"
+          class="secondary-button"
+        >
+          취소
+        </button>
+
+        <button
+          type="button"
+          id="confirmMatchResultBtn"
+          class="primary-button danger-button"
+        >
+          경기 결과 확정
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 라운드 정산 모달 -->
+  <div
+    id="roundSettlementModal"
+    class="modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="roundSettlementTitle"
+    hidden
+  >
+    <div class="modal-card modal-card-wide">
+      <div class="modal-heading">
+        <div>
+          <p class="eyebrow">ROUND SETTLEMENT</p>
+          <h2 id="roundSettlementTitle">라운드 정산</h2>
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          data-close-modal="roundSettlementModal"
+          aria-label="닫기"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="modal-content">
+        <p id="roundSettlementDescription">
+          모든 경기 결과와 참가자 예측을 비교합니다.
+        </p>
+
+        <div
+          id="roundSettlementPreview"
+          class="round-settlement-preview"
+        >
+          정산 정보를 계산하는 중입니다.
+        </div>
+
+        <div class="admin-warning-box">
+          정산 후 참가자의 적중 수와 통과 여부가 저장됩니다.
+          결승 정산에서는 세트 승자와 점수 오차도 계산됩니다.
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          id="cancelRoundSettlementBtn"
+          class="secondary-button"
+        >
+          취소
+        </button>
+
+        <button
+          type="button"
+          id="confirmRoundSettlementBtn"
+          class="primary-button danger-button"
+        >
+          라운드 정산 확정
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 알림 -->
+  <div
+    id="adminToast"
+    class="toast"
+    role="status"
+    aria-live="polite"
+    hidden
+  ></div>
+
+  <!-- 반드시 type="module" 유지 -->
+  <script type="module" src="./admin.js"></script>
 </body>
 </html>
