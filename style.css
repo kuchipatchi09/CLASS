@@ -2705,3 +2705,1066 @@ main {
     flex-direction: column;
   }
 }
+/* =========================================================
+   관리자 페이지 최종 레이아웃 복구
+   반드시 style.css 가장 마지막에 추가
+========================================================= */
+
+.admin-body {
+  min-height: 100vh;
+  margin: 0;
+  background: #f4f6f8;
+  color: #101820;
+}
+
+.admin-body button,
+.admin-body input {
+  font: inherit;
+}
+
+.admin-body button {
+  cursor: pointer;
+}
+
+.admin-body button:disabled {
+  cursor: not-allowed;
+}
+
+/* 관리자 헤더 */
+
+.admin-body .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto minmax(260px, 1fr);
+  min-height: 82px;
+  align-items: center;
+  padding: 0 48px;
+  border-bottom: 1px solid #e1e6ec;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(18px);
+}
+
+.admin-body .brand {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 10px;
+  color: #101820;
+  text-decoration: none;
+}
+
+.admin-body .brand-mark {
+  width: 12px;
+  height: 12px;
+  border: 4px solid #101820;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px #fff;
+  background: #1468ff;
+}
+
+.admin-body .brand-title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.admin-body .brand-divider {
+  width: 1px;
+  height: 18px;
+  background: #d4dae2;
+}
+
+.admin-body .brand-subtitle {
+  color: #687587;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.admin-body .main-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.admin-body .nav-button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  color: #697587;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.admin-body .nav-button:hover {
+  background: #f1f4f8;
+  color: #101820;
+}
+
+.admin-body .nav-button.active {
+  background: #eaf1ff;
+  color: #1468ff;
+}
+
+.admin-body .header-account {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 16px;
+}
+
+.admin-body .account-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.admin-body .account-info[hidden] {
+  display: none !important;
+}
+
+.admin-body .account-info strong {
+  color: #101820;
+  font-size: 13px;
+}
+
+.admin-body .account-info span {
+  color: #8a96a5;
+  font-size: 11px;
+}
+
+.admin-body .header-login-button {
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #101820;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.admin-body .header-login-button:hover {
+  transform: translateY(-1px);
+  background: #26313d;
+}
+
+/* 메인 영역 */
+
+.admin-main {
+  width: min(1500px, calc(100% - 80px));
+  margin: 0 auto;
+  padding: 54px 0 80px;
+}
+
+.admin-page[hidden],
+#adminDashboard[hidden],
+#adminLoginScreen[hidden] {
+  display: none !important;
+}
+
+.admin-page-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.admin-page-heading h1 {
+  margin: 6px 0 10px;
+  color: #101820;
+  font-size: clamp(36px, 4vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+}
+
+.admin-page-heading p:not(.eyebrow) {
+  margin: 0;
+  color: #778392;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.admin-body .eyebrow {
+  margin: 0;
+  color: #1468ff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+/* 공통 버튼 */
+
+.admin-body .primary-button,
+.admin-body .secondary-button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 800;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.admin-body .primary-button {
+  border: 1px solid #1468ff;
+  background: #1468ff;
+  color: #fff;
+}
+
+.admin-body .secondary-button {
+  border: 1px solid #dbe2ea;
+  background: #fff;
+  color: #27323f;
+}
+
+.admin-body .primary-button:hover:not(:disabled),
+.admin-body .secondary-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.admin-body .primary-button:disabled,
+.admin-body .secondary-button:disabled {
+  opacity: 0.45;
+}
+
+.admin-body .danger-button {
+  border-color: #101820;
+  background: #101820;
+}
+
+/* 통계 */
+
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.admin-stat-card {
+  min-height: 140px;
+  padding: 24px;
+  border: 1px solid #e0e6ed;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 14px 35px rgba(21, 32, 44, 0.045);
+}
+
+.admin-stat-card span {
+  display: block;
+  margin-bottom: 28px;
+  color: #84909e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-stat-card strong {
+  color: #101820;
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+/* 대시보드 */
+
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(310px, 0.7fr);
+  align-items: start;
+  gap: 22px;
+}
+
+.admin-dashboard-main,
+.admin-dashboard-side {
+  display: grid;
+  gap: 22px;
+}
+
+.admin-panel {
+  padding: 26px;
+  border: 1px solid #e0e6ed;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 14px 35px rgba(21, 32, 44, 0.045);
+}
+
+.admin-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.admin-panel-heading h2 {
+  margin: 6px 0 0;
+  color: #101820;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.current-round-card {
+  display: flex;
+  min-height: 125px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  border-radius: 18px;
+  background: #f6f8fb;
+}
+
+.current-round-info h3 {
+  margin: 9px 0;
+  color: #101820;
+  font-size: 28px;
+  letter-spacing: -0.045em;
+}
+
+.current-round-info p {
+  margin: 0;
+  color: #7c8795;
+  font-size: 13px;
+}
+
+.round-status {
+  display: inline-flex;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #e9f1ff;
+  color: #1468ff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+/* 실시간 비율 */
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #19a95c;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #19a95c;
+  box-shadow: 0 0 0 6px rgba(25, 169, 92, 0.1);
+}
+
+.live-prediction-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.live-prediction-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #e0e6ed;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.live-match-meta,
+.prediction-ratio-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.live-match-meta {
+  color: #8c97a5;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.live-match-teams {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  align-items: center;
+  margin: 24px 0;
+  text-align: center;
+}
+
+.live-match-teams strong {
+  overflow: hidden;
+  color: #101820;
+  font-size: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-match-teams span {
+  color: #9da8b5;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.prediction-ratio-row + .prediction-ratio-row {
+  margin-top: 14px;
+}
+
+.prediction-ratio-label {
+  margin-bottom: 7px;
+  color: #101820;
+  font-size: 12px;
+}
+
+.prediction-ratio-label span {
+  color: #8995a3;
+}
+
+.prediction-ratio-track {
+  overflow: hidden;
+  height: 8px;
+  border-radius: 999px;
+  background: #e3e8ef;
+}
+
+.prediction-ratio-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #1468ff;
+}
+
+.prediction-total {
+  margin: 16px 0 0;
+  color: #8a96a4;
+  font-size: 11px;
+}
+
+/* 랭킹 */
+
+.admin-ranking-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-ranking-list li {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e7ebf0;
+}
+
+.admin-ranking-list li:last-child {
+  border-bottom: 0;
+}
+
+.ranking-number {
+  color: #9aa6b4;
+  font-size: 12px;
+}
+
+.ranking-person {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ranking-person strong {
+  overflow: hidden;
+  color: #101820;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking-person span {
+  color: #9aa5b2;
+  font-size: 10px;
+}
+
+.ranking-hits {
+  color: #1468ff;
+  font-size: 17px;
+}
+
+.ranking-hits small {
+  font-size: 8px;
+}
+
+.admin-guide-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #687587;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* 경기 관리 */
+
+.admin-round-list,
+.admin-round-section {
+  display: grid;
+  gap: 22px;
+}
+
+.admin-round-section {
+  padding: 26px;
+  border: 1px solid #e0e6ed;
+  border-radius: 22px;
+  background: #fff;
+}
+
+.admin-round-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.admin-round-heading h2 {
+  margin: 5px 0 0;
+  font-size: 26px;
+}
+
+.admin-match-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-match-card {
+  padding: 20px;
+  border: 1px solid #e0e6ed;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.admin-match-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #1468ff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.admin-match-date {
+  margin: 8px 0 18px;
+  color: #85919f;
+  font-size: 12px;
+}
+
+.admin-match-team-buttons {
+  display: grid;
+  grid-template-columns: 1fr 32px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-match-team-buttons > span {
+  color: #9da8b5;
+  font-size: 10px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.admin-match-team-buttons button {
+  display: flex;
+  min-height: 105px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 17px;
+  border: 1px solid #dce3ec;
+  border-radius: 15px;
+  background: #fff;
+  color: #101820;
+  text-align: left;
+}
+
+.admin-match-team-buttons button:not(:disabled):hover {
+  border-color: #1468ff;
+  background: #eef4ff;
+}
+
+.admin-match-team-buttons button.winner {
+  border-color: #1468ff;
+  background: #1468ff;
+  color: #fff;
+}
+
+.admin-match-team-buttons button small {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.admin-match-team-buttons button strong {
+  font-size: 23px;
+}
+
+.admin-result-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 14px;
+  padding: 13px 15px;
+  border-radius: 12px;
+  background: #e8f7ef;
+  color: #198a50;
+  font-size: 12px;
+}
+
+.admin-result-label.pending {
+  background: #edf1f5;
+  color: #84909e;
+}
+
+/* 참가자 테이블 */
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 16px;
+  border-bottom: 1px solid #e6ebf0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-table th {
+  color: #8a95a3;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.admin-table td {
+  color: #27323f;
+  font-size: 13px;
+}
+
+.participant-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.participant-identity strong {
+  color: #101820;
+}
+
+.participant-identity span {
+  color: #929daa;
+  font-size: 10px;
+}
+
+.participant-status {
+  display: inline-flex;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.participant-status.alive {
+  background: #e5f8ec;
+  color: #159252;
+}
+
+.participant-status.eliminated {
+  background: #fceaea;
+  color: #d64a4a;
+}
+
+/* 로그인 화면 */
+
+.admin-login-screen {
+  display: flex;
+  min-height: calc(100vh - 190px);
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.admin-login-card {
+  width: min(100%, 540px);
+  padding: 54px;
+  border: 1px solid #e0e6ed;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(23, 34, 46, 0.09);
+  text-align: center;
+}
+
+.admin-login-card h1 {
+  margin: 12px 0 18px;
+  font-size: 40px;
+  letter-spacing: -0.055em;
+}
+
+.admin-login-card > p:not(.eyebrow) {
+  margin: 0 auto 26px;
+  color: #738090;
+  line-height: 1.7;
+}
+
+.admin-login-card .primary-button {
+  width: 100%;
+}
+
+.admin-login-notice {
+  margin: 22px 0 0 !important;
+  color: #8b96a4 !important;
+  font-size: 12px;
+}
+
+/* 모달 */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: rgba(10, 17, 25, 0.58);
+  backdrop-filter: blur(8px);
+}
+
+.modal-backdrop[hidden] {
+  display: none !important;
+}
+
+.modal-card {
+  overflow-y: auto;
+  width: min(100%, 560px);
+  max-height: calc(100vh - 56px);
+  padding: 26px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.22);
+}
+
+.modal-card-wide {
+  width: min(100%, 900px);
+}
+
+.modal-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5eaf0;
+}
+
+.modal-heading h2 {
+  margin: 5px 0 0;
+  font-size: 27px;
+  letter-spacing: -0.04em;
+}
+
+.modal-close {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f3f7;
+  color: #536070;
+  font-size: 24px;
+}
+
+.modal-content {
+  padding: 22px 0;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid #e5eaf0;
+}
+
+.match-result-summary {
+  margin-top: 20px;
+}
+
+.result-confirmation {
+  display: grid;
+  grid-template-columns: 1fr 50px 1fr;
+  align-items: center;
+  padding: 22px;
+  border: 1px solid #e0e6ed;
+  border-radius: 18px;
+  background: #f7f9fc;
+  text-align: center;
+}
+
+.result-confirmation span {
+  color: #101820;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.result-confirmation strong {
+  color: #9ba6b3;
+  font-size: 11px;
+}
+
+.selected-winner-box,
+.admin-warning-box,
+.admin-message-box {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.selected-winner-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #eaf1ff;
+  color: #50647e;
+}
+
+.selected-winner-box strong {
+  color: #1468ff;
+  font-size: 18px;
+}
+
+.admin-warning-box {
+  border: 1px solid #f0dca9;
+  background: #fff8e8;
+  color: #8d6b1f;
+}
+
+.admin-message-box {
+  border: 1px solid #dbe3ec;
+  background: #f6f8fb;
+  color: #647182;
+}
+
+.settlement-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.settlement-stat-grid article {
+  padding: 18px;
+  border: 1px solid #e0e6ed;
+  border-radius: 15px;
+  background: #f7f9fc;
+}
+
+.settlement-stat-grid span {
+  display: block;
+  margin-bottom: 10px;
+  color: #8a96a4;
+  font-size: 11px;
+}
+
+.settlement-stat-grid strong {
+  font-size: 18px;
+}
+
+.toast {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 2000;
+  max-width: min(420px, calc(100% - 40px));
+  padding: 15px 18px;
+  border-radius: 13px;
+  background: #101820;
+  color: #fff;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.toast[hidden] {
+  display: none !important;
+}
+
+.toast.error {
+  background: #c83f3f;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.admin-empty-state {
+  padding: 32px 20px;
+  color: #909ba9;
+  text-align: center;
+}
+
+/* 패드 */
+
+@media (max-width: 1100px) {
+  .admin-body .site-header {
+    grid-template-columns: 1fr auto;
+    padding: 0 24px;
+  }
+
+  .admin-body .main-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    padding-bottom: 12px;
+  }
+
+  .admin-body .site-header {
+    min-height: 128px;
+  }
+
+  .admin-main {
+    width: min(100% - 40px, 1100px);
+    padding-top: 36px;
+  }
+
+  .admin-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .settlement-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 모바일 */
+
+@media (max-width: 700px) {
+  .admin-body .site-header {
+    display: flex;
+    min-height: auto;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .admin-body .brand-subtitle,
+  .admin-body .brand-divider,
+  .admin-body .account-info {
+    display: none;
+  }
+
+  .admin-body .main-nav {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 0;
+  }
+
+  .admin-body .nav-button {
+    min-height: 42px;
+    padding: 0 13px;
+    white-space: nowrap;
+  }
+
+  .admin-body .header-account {
+    margin-left: auto;
+  }
+
+  .admin-body .header-login-button {
+    min-height: 42px;
+    padding: 0 14px;
+  }
+
+  .admin-main {
+    width: min(100% - 24px, 700px);
+    padding: 28px 0 60px;
+  }
+
+  .admin-page-heading,
+  .current-round-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-page-heading h1 {
+    font-size: 38px;
+  }
+
+  .admin-stat-grid,
+  .admin-match-grid,
+  .live-prediction-grid,
+  .settlement-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stat-card {
+    min-height: 110px;
+  }
+
+  .admin-login-card {
+    padding: 34px 22px;
+  }
+
+  .admin-login-card h1 {
+    font-size: 34px;
+  }
+
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
