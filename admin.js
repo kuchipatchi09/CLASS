@@ -9,11 +9,8 @@ import {
   doc,
   getDoc,
   getDocs,
-  query,
-  where,
-  orderBy,
-  updateDoc,
   setDoc,
+  updateDoc,
   writeBatch,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -24,11 +21,8 @@ import {
   provider
 } from "./firebase-config.js";
 
-/* =========================================================
-   기본 설정
-========================================================= */
-
 const ADMIN_EMAIL = "cnsh32_1218@g.cnees.kr";
+
 const HIDDEN_EMAILS = new Set([
   "whisk1209@g.cnees.kr"
 ]);
@@ -79,88 +73,122 @@ let selectedSettlementRound = null;
    DOM
 ========================================================= */
 
-const adminLoginScreen = document.getElementById("adminLoginScreen");
-const adminDashboard = document.getElementById("adminDashboard");
+const adminLoginScreen =
+  document.getElementById("adminLoginScreen");
 
-const adminLoginBtn = document.getElementById("adminLoginBtn");
-const adminLoginMainBtn = document.getElementById("adminLoginMainBtn");
-const adminAccountInfo = document.getElementById("adminAccountInfo");
-const adminAccountName = document.getElementById("adminAccountName");
-const adminAccountEmail = document.getElementById("adminAccountEmail");
+const adminDashboard =
+  document.getElementById("adminDashboard");
 
-const setupTournamentBtn = document.getElementById(
-  "setupTournamentBtn"
-);
+const adminLoginBtn =
+  document.getElementById("adminLoginBtn");
 
-const adminTotalParticipants = document.getElementById(
-  "adminTotalParticipants"
-);
-const adminAliveParticipants = document.getElementById(
-  "adminAliveParticipants"
-);
-const adminCompletedMatches = document.getElementById(
-  "adminCompletedMatches"
-);
-const adminTotalPredictions = document.getElementById(
-  "adminTotalPredictions"
-);
+const adminLoginMainBtn =
+  document.getElementById("adminLoginMainBtn");
 
-const currentRoundAdminCard = document.getElementById(
-  "currentRoundAdminCard"
-);
-const livePredictionGrid = document.getElementById(
-  "livePredictionGrid"
-);
-const adminTopRanking = document.getElementById("adminTopRanking");
-const adminRoundList = document.getElementById("adminRoundList");
-const adminParticipantList = document.getElementById(
-  "adminParticipantList"
-);
+const adminAccountInfo =
+  document.getElementById("adminAccountInfo");
 
-const setupModal = document.getElementById("setupModal");
-const setupStatus = document.getElementById("setupStatus");
+const adminAccountName =
+  document.getElementById("adminAccountName");
 
-const matchResultModal = document.getElementById(
-  "matchResultModal"
-);
-const matchResultTitle = document.getElementById(
-  "matchResultTitle"
-);
-const matchResultDescription = document.getElementById(
-  "matchResultDescription"
-);
-const matchResultSummary = document.getElementById(
-  "matchResultSummary"
-);
-const matchResultWarning = document.getElementById(
-  "matchResultWarning"
-);
-const confirmMatchResultBtn = document.getElementById(
-  "confirmMatchResultBtn"
-);
-const cancelMatchResultBtn = document.getElementById(
-  "cancelMatchResultBtn"
-);
+const adminAccountEmail =
+  document.getElementById("adminAccountEmail");
 
-const adminFinalScorePanel = document.getElementById(
-  "adminFinalScorePanel"
-);
-const actualFinalTeamA = document.getElementById(
-  "actualFinalTeamA"
-);
-const actualFinalTeamB = document.getElementById(
-  "actualFinalTeamB"
-);
-const actualFinalWinner = document.getElementById(
-  "actualFinalWinner"
-);
-const actualSet3Card = document.getElementById(
-  "actualSet3Card"
-);
+const setupTournamentBtn =
+  document.getElementById("setupTournamentBtn");
+
+const adminTotalParticipants =
+  document.getElementById("adminTotalParticipants");
+
+const adminAliveParticipants =
+  document.getElementById("adminAliveParticipants");
+
+const adminCompletedMatches =
+  document.getElementById("adminCompletedMatches");
+
+const adminTotalPredictions =
+  document.getElementById("adminTotalPredictions");
+
+const currentRoundAdminCard =
+  document.getElementById("currentRoundAdminCard");
+
+const livePredictionGrid =
+  document.getElementById("livePredictionGrid");
+
+const adminTopRanking =
+  document.getElementById("adminTopRanking");
+
+const adminRoundList =
+  document.getElementById("adminRoundList");
+
+const adminParticipantList =
+  document.getElementById("adminParticipantList");
+
+const setupModal =
+  document.getElementById("setupModal");
+
+const setupStatus =
+  document.getElementById("setupStatus");
+
+const matchResultModal =
+  document.getElementById("matchResultModal");
+
+const matchResultTitle =
+  document.getElementById("matchResultTitle");
+
+const matchResultDescription =
+  document.getElementById("matchResultDescription");
+
+const matchResultSummary =
+  document.getElementById("matchResultSummary");
+
+const matchResultWarning =
+  document.getElementById("matchResultWarning");
+
+const confirmMatchResultBtn =
+  document.getElementById("confirmMatchResultBtn");
+
+const cancelMatchResultBtn =
+  document.getElementById("cancelMatchResultBtn");
+
+const adminFinalScorePanel =
+  document.getElementById("adminFinalScorePanel");
+
+const actualFinalTeamA =
+  document.getElementById("actualFinalTeamA");
+
+const actualFinalTeamB =
+  document.getElementById("actualFinalTeamB");
+
+const actualFinalWinner =
+  document.getElementById("actualFinalWinner");
+
+const actualSet3Card =
+  document.getElementById("actualSet3Card");
+
+const roundSettlementModal =
+  document.getElementById("roundSettlementModal");
+
+const roundSettlementTitle =
+  document.getElementById("roundSettlementTitle");
+
+const roundSettlementDescription =
+  document.getElementById("roundSettlementDescription");
+
+const roundSettlementPreview =
+  document.getElementById("roundSettlementPreview");
+
+const confirmRoundSettlementBtn =
+  document.getElementById("confirmRoundSettlementBtn");
+
+const cancelRoundSettlementBtn =
+  document.getElementById("cancelRoundSettlementBtn");
+
+const adminToast =
+  document.getElementById("adminToast");
 
 const actualSetInputs = [
   {
-    card: null,
     scoreA: document.getElementById("actualSet1ScoreA"),
     scoreB: document.getElementById("actualSet1ScoreB"),
     winner: document.getElementById("actualSet1Winner"),
@@ -168,7 +196,6 @@ const actualSetInputs = [
     labelB: document.getElementById("actualSet1TeamBLabel")
   },
   {
-    card: null,
     scoreA: document.getElementById("actualSet2ScoreA"),
     scoreB: document.getElementById("actualSet2ScoreB"),
     winner: document.getElementById("actualSet2Winner"),
@@ -176,7 +203,6 @@ const actualSetInputs = [
     labelB: document.getElementById("actualSet2TeamBLabel")
   },
   {
-    card: actualSet3Card,
     scoreA: document.getElementById("actualSet3ScoreA"),
     scoreB: document.getElementById("actualSet3ScoreB"),
     winner: document.getElementById("actualSet3Winner"),
@@ -185,29 +211,8 @@ const actualSetInputs = [
   }
 ];
 
-const roundSettlementModal = document.getElementById(
-  "roundSettlementModal"
-);
-const roundSettlementTitle = document.getElementById(
-  "roundSettlementTitle"
-);
-const roundSettlementDescription = document.getElementById(
-  "roundSettlementDescription"
-);
-const roundSettlementPreview = document.getElementById(
-  "roundSettlementPreview"
-);
-const confirmRoundSettlementBtn = document.getElementById(
-  "confirmRoundSettlementBtn"
-);
-const cancelRoundSettlementBtn = document.getElementById(
-  "cancelRoundSettlementBtn"
-);
-
-const adminToast = document.getElementById("adminToast");
-
 /* =========================================================
-   공통 함수
+   공통
 ========================================================= */
 
 function normalizeEmail(email) {
@@ -244,8 +249,26 @@ function getRoundTitle(roundKey) {
   return (
     ROUND_INFO[roundKey]?.title ||
     allRounds.find((round) => round.id === roundKey)?.title ||
-    roundKey
+    roundKey ||
+    "라운드"
   );
+}
+
+function getMatchNumber(match) {
+  return (
+    Number(match.matchNo) ||
+    Number(String(match.id).replace(/\D/g, "")) ||
+    0
+  );
+}
+
+function sortMatches(matches) {
+  return [...matches].sort((a, b) => {
+    const aOrder = Number(a.order || getMatchNumber(a));
+    const bOrder = Number(b.order || getMatchNumber(b));
+
+    return aOrder - bOrder || a.id.localeCompare(b.id);
+  });
 }
 
 function getTimestampMillis(value) {
@@ -263,6 +286,14 @@ function getTimestampMillis(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isFinalMatch(match) {
+  return (
+    match?.roundKey === "final" ||
+    match?.round === "결승" ||
+    match?.id === "match11"
+  );
+}
+
 function showToast(message, type = "success") {
   if (!adminToast) {
     alert(message);
@@ -273,91 +304,124 @@ function showToast(message, type = "success") {
   adminToast.className = `toast ${type}`;
   adminToast.hidden = false;
 
-  window.clearTimeout(showToast.timer);
+  clearTimeout(showToast.timer);
 
-  showToast.timer = window.setTimeout(() => {
+  showToast.timer = setTimeout(() => {
     adminToast.hidden = true;
   }, 3500);
 }
 
 function openModal(modal) {
   if (!modal) return;
+
   modal.hidden = false;
   document.body.classList.add("modal-open");
 }
 
 function closeModal(modal) {
   if (!modal) return;
+
   modal.hidden = true;
 
-  const openedModal = document.querySelector(
-    ".modal-backdrop:not([hidden])"
-  );
-
-  if (!openedModal) {
+  if (!document.querySelector(".modal-backdrop:not([hidden])")) {
     document.body.classList.remove("modal-open");
   }
 }
 
-function getMatchNumber(match) {
-  return (
-    Number(match.matchNo) ||
-    Number(String(match.id).replace(/\D/g, "")) ||
-    0
-  );
-}
+/* =========================================================
+   기존 예측 형식 호환
+========================================================= */
 
-function sortMatches(matches) {
-  return [...matches].sort((a, b) => {
-    const orderDifference =
-      Number(a.order || getMatchNumber(a)) -
-      Number(b.order || getMatchNumber(b));
+function extractSelectionValue(value) {
+  if (value === null || value === undefined) {
+    return null;
+  }
 
-    return orderDifference || a.id.localeCompare(b.id);
-  });
-}
+  if (typeof value === "string") {
+    return value;
+  }
 
-function getCurrentRound() {
-  const activeRound = allRounds.find((round) =>
-    ["open", "active"].includes(round.status)
-  );
-
-  if (activeRound) return activeRound;
-
-  for (const roundKey of ROUND_ORDER) {
-    const matches = allMatches.filter(
-      (match) => match.roundKey === roundKey
+  if (typeof value === "object") {
+    return (
+      value.selectedTeam ||
+      value.winner ||
+      value.team ||
+      value.choice ||
+      value.value ||
+      value.prediction ||
+      null
     );
+  }
+
+  return null;
+}
+
+function getPredictionSelection(prediction, matchId) {
+  const containers = [
+    prediction.selections,
+    prediction.predictions,
+    prediction.answers,
+    prediction.picks,
+    prediction.choices
+  ];
+
+  for (const container of containers) {
+    if (!container) continue;
+
+    if (Array.isArray(container)) {
+      const item = container.find((entry) =>
+        entry?.matchId === matchId ||
+        entry?.id === matchId ||
+        entry?.match === matchId
+      );
+
+      if (item) {
+        return extractSelectionValue(item);
+      }
+
+      continue;
+    }
 
     if (
-      matches.length > 0 &&
-      matches.some((match) => !match.winner)
+      typeof container === "object" &&
+      Object.prototype.hasOwnProperty.call(container, matchId)
     ) {
-      return {
-        id: roundKey,
-        title: getRoundTitle(roundKey),
-        status: "open"
-      };
+      return extractSelectionValue(container[matchId]);
     }
   }
 
-  return allRounds.at(-1) || null;
+  if (
+    Object.prototype.hasOwnProperty.call(prediction, matchId)
+  ) {
+    return extractSelectionValue(prediction[matchId]);
+  }
+
+  if (
+    prediction.matchId === matchId ||
+    prediction.match === matchId
+  ) {
+    return (
+      prediction.selectedTeam ||
+      prediction.winner ||
+      prediction.team ||
+      prediction.choice ||
+      prediction.prediction ||
+      prediction.value ||
+      null
+    );
+  }
+
+  return null;
 }
 
-function getMatchStatusLabel(match) {
-  if (match.winner) return "결과 확정";
-
-  if (match.status === "open") return "예측 진행 중";
-  if (match.status === "closed") return "예측 마감";
-
-  return "예정";
-}
-
-function isFinalMatch(match) {
+function getPredictionSelections(prediction) {
   return (
-    match?.roundKey === "final" ||
-    match?.round === "결승" ||
-    match?.id === "match11"
+    prediction.selections ||
+    prediction.predictions ||
+    prediction.answers ||
+    prediction.picks ||
+    prediction.choices ||
+    {}
   );
 }
 
@@ -368,17 +432,14 @@ function isFinalMatch(match) {
 async function loginAdmin() {
   try {
     const result = await signInWithPopup(auth, provider);
-    const email = normalizeEmail(result.user.email);
 
-    if (!isAdminEmail(email)) {
+    if (!isAdminEmail(result.user.email)) {
       await signOut(auth);
 
       showToast(
         "관리자 계정으로만 로그인할 수 있습니다.",
         "error"
       );
-
-      return;
     }
   } catch (error) {
     console.error(error);
@@ -399,6 +460,16 @@ async function logoutAdmin() {
   }
 }
 
+adminLoginBtn?.addEventListener("click", () => {
+  if (currentAdmin) {
+    logoutAdmin();
+  } else {
+    loginAdmin();
+  }
+});
+
+adminLoginMainBtn?.addEventListener("click", loginAdmin);
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     currentAdmin = null;
@@ -406,8 +477,8 @@ onAuthStateChanged(auth, async (user) => {
     adminLoginScreen.hidden = false;
     adminDashboard.hidden = true;
     adminAccountInfo.hidden = true;
-
     adminLoginBtn.textContent = "관리자 로그인";
+
     return;
   }
 
@@ -430,68 +501,75 @@ onAuthStateChanged(auth, async (user) => {
 
   adminAccountName.textContent =
     user.displayName || "챌린저컵 관리자";
+
   adminAccountEmail.textContent = user.email;
   adminLoginBtn.textContent = "로그아웃";
 
   await loadAdminData();
 });
 
-adminLoginBtn?.addEventListener("click", () => {
-  if (currentAdmin) {
-    logoutAdmin();
-  } else {
-    loginAdmin();
-  }
-});
-
-adminLoginMainBtn?.addEventListener("click", loginAdmin);
-
 /* =========================================================
-   Firebase 데이터 불러오기
+   데이터 불러오기
 ========================================================= */
+
+async function loadCollectionSafely(collectionName) {
+  try {
+    const snapshot = await getDocs(
+      collection(db, collectionName)
+    );
+
+    return snapshot.docs.map((item) => ({
+      id: item.id,
+      ...item.data(),
+      _collection: collectionName
+    }));
+  } catch (error) {
+    console.warn(
+      `${collectionName} 컬렉션을 불러오지 못했습니다.`,
+      error
+    );
+
+    return [];
+  }
+}
 
 async function loadAdminData() {
   if (!currentAdmin) return;
 
   try {
     const [
-      matchSnapshot,
-      roundSnapshot,
-      userSnapshot,
-      predictionSnapshot
+      matches,
+      rounds,
+      users,
+      roundPredictions,
+      oldPredictions
     ] = await Promise.all([
-      getDocs(collection(db, "matches")),
-      getDocs(collection(db, "rounds")),
-      getDocs(collection(db, "users")),
-      getDocs(collection(db, "roundPredictions"))
+      loadCollectionSafely("matches"),
+      loadCollectionSafely("rounds"),
+      loadCollectionSafely("users"),
+      loadCollectionSafely("roundPredictions"),
+      loadCollectionSafely("predictions")
     ]);
 
-    allMatches = matchSnapshot.docs.map((item) => ({
-      id: item.id,
-      ...item.data()
-    }));
+    allMatches = matches;
+    allRounds = rounds;
+    allUsers = users;
 
-    allRounds = roundSnapshot.docs.map((item) => ({
-      id: item.id,
-      ...item.data()
-    }));
-
-    allUsers = userSnapshot.docs.map((item) => ({
-      id: item.id,
-      ...item.data()
-    }));
-
-    allRoundPredictions = predictionSnapshot.docs.map((item) => ({
-      id: item.id,
-      ...item.data()
-    }));
+    /*
+      예전 predictions와 새 roundPredictions를 모두 읽습니다.
+      같은 문서가 양쪽에 있다면 컬렉션명을 포함해 구분됩니다.
+    */
+    allRoundPredictions = [
+      ...roundPredictions,
+      ...oldPredictions
+    ];
 
     renderAdmin();
   } catch (error) {
     console.error(error);
 
     showToast(
-      `관리자 데이터를 불러오지 못했습니다: ${error.message}`,
+      `관리자 데이터 로딩 실패: ${error.message}`,
       "error"
     );
   }
@@ -507,7 +585,7 @@ function renderAdmin() {
 }
 
 /* =========================================================
-   대시보드 통계
+   참가자 및 통계
 ========================================================= */
 
 function getVisibleParticipants() {
@@ -522,27 +600,73 @@ function getVisibleParticipants() {
   });
 }
 
+function getUniquePredictionCount() {
+  const keys = new Set();
+
+  allRoundPredictions.forEach((prediction) => {
+    const key = [
+      prediction.uid || prediction.userId || prediction.email,
+      prediction.roundKey || prediction.round || "",
+      prediction.matchId || "",
+      prediction._collection || ""
+    ].join("_");
+
+    keys.add(key);
+  });
+
+  return keys.size;
+}
+
 function renderStatistics() {
   const participants = getVisibleParticipants();
 
   const aliveCount = participants.filter(
-    (user) => user.alive !== false && user.eliminated !== true
+    (user) =>
+      user.alive !== false &&
+      user.eliminated !== true
   ).length;
 
-  const completedMatches = allMatches.filter(
+  const completedCount = allMatches.filter(
     (match) => Boolean(match.winner)
   ).length;
 
   adminTotalParticipants.textContent = participants.length;
   adminAliveParticipants.textContent = aliveCount;
-  adminCompletedMatches.textContent = completedMatches;
+  adminCompletedMatches.textContent = completedCount;
   adminTotalPredictions.textContent =
-    allRoundPredictions.length;
+    getUniquePredictionCount();
 }
 
 /* =========================================================
    현재 라운드
 ========================================================= */
+
+function getCurrentRound() {
+  const activeRound = allRounds.find((round) =>
+    ["open", "active"].includes(round.status)
+  );
+
+  if (activeRound) return activeRound;
+
+  for (const roundKey of ROUND_ORDER) {
+    const matches = allMatches.filter(
+      (match) => match.roundKey === roundKey
+    );
+
+    if (
+      matches.length &&
+      matches.some((match) => !match.winner)
+    ) {
+      return {
+        id: roundKey,
+        title: getRoundTitle(roundKey),
+        status: "open"
+      };
+    }
+  }
+
+  return allRounds.at(-1) || null;
+}
 
 function renderCurrentRound() {
   const currentRound = getCurrentRound();
@@ -553,30 +677,47 @@ function renderCurrentRound() {
         현재 진행 중인 라운드가 없습니다.
       </div>
     `;
+
     return;
   }
 
   const roundKey = currentRound.id;
+
   const matches = sortMatches(
-    allMatches.filter((match) => match.roundKey === roundKey)
+    allMatches.filter(
+      (match) => match.roundKey === roundKey
+    )
   );
 
   const completedCount = matches.filter(
     (match) => match.winner
   ).length;
 
-  const predictionCount = allRoundPredictions.filter(
-    (prediction) => prediction.roundKey === roundKey
-  ).length;
+  const predictionUsers = new Set(
+    allRoundPredictions
+      .filter((prediction) =>
+        prediction.roundKey === roundKey ||
+        prediction.round === roundKey
+      )
+      .map((prediction) =>
+        prediction.uid ||
+        prediction.userId ||
+        prediction.email
+      )
+      .filter(Boolean)
+  );
 
   const allCompleted =
     matches.length > 0 &&
-    completedCount === matches.length;
+    matches.every((match) => Boolean(match.winner));
 
-  const alreadySettled =
-    currentRound.resultProcessed === true ||
-    currentRound.settled === true ||
-    matches.every((match) => match.resultProcessed === true);
+  const roundDocument = allRounds.find(
+    (round) => round.id === roundKey
+  );
+
+  const settled =
+    roundDocument?.settled === true ||
+    roundDocument?.resultProcessed === true;
 
   currentRoundAdminCard.innerHTML = `
     <div class="current-round-card">
@@ -590,7 +731,7 @@ function renderCurrentRound() {
         <p>
           ${matches.length}경기 중
           <strong>${completedCount}경기</strong> 결과 확정 ·
-          <strong>${predictionCount}명</strong> 제출
+          <strong>${predictionUsers.size}명</strong> 제출
         </p>
       </div>
 
@@ -598,10 +739,10 @@ function renderCurrentRound() {
         type="button"
         class="primary-button"
         data-settle-round="${escapeHtml(roundKey)}"
-        ${!allCompleted || alreadySettled ? "disabled" : ""}
+        ${!allCompleted || settled ? "disabled" : ""}
       >
         ${
-          alreadySettled
+          settled
             ? "정산 완료"
             : allCompleted
               ? "라운드 정산"
@@ -622,52 +763,72 @@ function renderCurrentRound() {
    실시간 예측 비율
 ========================================================= */
 
-function getPredictionSelection(prediction, matchId) {
-  if (prediction.selections?.[matchId]) {
-    return prediction.selections[matchId];
-  }
-
-  if (prediction.predictions?.[matchId]) {
-    return prediction.predictions[matchId];
-  }
-
-  if (prediction.answers?.[matchId]) {
-    return prediction.answers[matchId];
-  }
-
+function isPredictionForRound(prediction, roundKey) {
   if (
-    prediction.matchId === matchId &&
-    prediction.selectedTeam
+    prediction.roundKey === roundKey ||
+    prediction.round === roundKey
   ) {
-    return prediction.selectedTeam;
+    return true;
   }
 
-  return null;
+  /*
+    예전 개별 경기 예측에는 roundKey가 없을 수 있으므로
+    matchId로 라운드를 확인합니다.
+  */
+  if (prediction.matchId) {
+    const match = allMatches.find(
+      (item) => item.id === prediction.matchId
+    );
+
+    return match?.roundKey === roundKey;
+  }
+
+  return false;
 }
 
 function getMatchPredictionCounts(match) {
-  const roundPredictions = allRoundPredictions.filter(
-    (prediction) => prediction.roundKey === match.roundKey
+  const relevantPredictions = allRoundPredictions.filter(
+    (prediction) =>
+      isPredictionForRound(prediction, match.roundKey)
   );
 
-  let teamACount = 0;
-  let teamBCount = 0;
+  const teamAUsers = new Set();
+  const teamBUsers = new Set();
 
-  roundPredictions.forEach((prediction) => {
+  relevantPredictions.forEach((prediction) => {
     const selection = getPredictionSelection(
       prediction,
       match.id
     );
 
-    if (selection === match.teamA) teamACount += 1;
-    if (selection === match.teamB) teamBCount += 1;
+    const participantKey =
+      prediction.uid ||
+      prediction.userId ||
+      prediction.email ||
+      prediction.id;
+
+    if (selection === match.teamA) {
+      teamAUsers.add(participantKey);
+    }
+
+    if (selection === match.teamB) {
+      teamBUsers.add(participantKey);
+    }
   });
 
   return {
-    teamACount,
-    teamBCount,
-    total: teamACount + teamBCount
+    teamACount: teamAUsers.size,
+    teamBCount: teamBUsers.size,
+    total: teamAUsers.size + teamBUsers.size
   };
+}
+
+function getMatchStatusLabel(match) {
+  if (match.winner) return "결과 확정";
+  if (match.status === "open") return "예측 진행 중";
+  if (match.status === "closed") return "예측 마감";
+
+  return "예정";
 }
 
 function renderLivePredictions() {
@@ -679,6 +840,7 @@ function renderLivePredictions() {
         표시할 예측 경기가 없습니다.
       </div>
     `;
+
     return;
   }
 
@@ -688,12 +850,13 @@ function renderLivePredictions() {
     )
   );
 
-  if (matches.length === 0) {
+  if (!matches.length) {
     livePredictionGrid.innerHTML = `
       <div class="admin-empty-state">
         현재 라운드 경기가 없습니다.
       </div>
     `;
+
     return;
   }
 
@@ -702,11 +865,15 @@ function renderLivePredictions() {
       const counts = getMatchPredictionCounts(match);
 
       const teamAPercent = counts.total
-        ? Math.round((counts.teamACount / counts.total) * 100)
+        ? Math.round(
+            (counts.teamACount / counts.total) * 100
+          )
         : 0;
 
       const teamBPercent = counts.total
-        ? Math.round((counts.teamBCount / counts.total) * 100)
+        ? Math.round(
+            (counts.teamBCount / counts.total) * 100
+          )
         : 0;
 
       return `
@@ -725,7 +892,9 @@ function renderLivePredictions() {
           <div class="prediction-ratio-row">
             <div class="prediction-ratio-label">
               <strong>${escapeHtml(match.teamA || "TEAM A")}</strong>
-              <span>${counts.teamACount}명 · ${teamAPercent}%</span>
+              <span>
+                ${counts.teamACount}명 · ${teamAPercent}%
+              </span>
             </div>
 
             <div class="prediction-ratio-track">
@@ -736,7 +905,9 @@ function renderLivePredictions() {
           <div class="prediction-ratio-row">
             <div class="prediction-ratio-label">
               <strong>${escapeHtml(match.teamB || "TEAM B")}</strong>
-              <span>${counts.teamBCount}명 · ${teamBPercent}%</span>
+              <span>
+                ${counts.teamBCount}명 · ${teamBPercent}%
+              </span>
             </div>
 
             <div class="prediction-ratio-track">
@@ -763,10 +934,13 @@ function getFinalTiebreak(user) {
   return {
     finalWinnerCorrect:
       value.finalWinnerCorrect === true ? 1 : 0,
+
     correctSetWinners:
       Number(value.correctSetWinners || 0),
+
     exactSetScores:
       Number(value.exactSetScores || 0),
+
     totalScoreError:
       Number.isFinite(Number(value.totalScoreError))
         ? Number(value.totalScoreError)
@@ -776,10 +950,11 @@ function getFinalTiebreak(user) {
 
 function sortRankingUsers(users) {
   return [...users].sort((a, b) => {
-    const hitDifference =
-      Number(b.totalHits || 0) - Number(a.totalHits || 0);
+    const hits =
+      Number(b.totalHits || 0) -
+      Number(a.totalHits || 0);
 
-    if (hitDifference !== 0) return hitDifference;
+    if (hits !== 0) return hits;
 
     const finalA = getFinalTiebreak(a);
     const finalB = getFinalTiebreak(b);
@@ -824,14 +999,6 @@ function sortRankingUsers(users) {
       );
     }
 
-    const submittedDifference =
-      getTimestampMillis(a.finalSubmittedAt) -
-      getTimestampMillis(b.finalSubmittedAt);
-
-    if (submittedDifference !== 0) {
-      return submittedDifference;
-    }
-
     return getDisplayName(a).localeCompare(
       getDisplayName(b),
       "ko"
@@ -844,45 +1011,45 @@ function renderTopRanking() {
     getVisibleParticipants()
   ).slice(0, 5);
 
-  if (ranking.length === 0) {
+  if (!ranking.length) {
     adminTopRanking.innerHTML = `
       <div class="admin-empty-state">
         아직 집계 전입니다.
       </div>
     `;
+
     return;
   }
 
   adminTopRanking.innerHTML = `
     <ol class="admin-ranking-list">
-      ${ranking
-        .map(
-          (user, index) => `
-            <li>
-              <span class="ranking-number">
-                ${String(index + 1).padStart(2, "0")}
-              </span>
+      ${ranking.map((user, index) => `
+        <li>
+          <span class="ranking-number">
+            ${String(index + 1).padStart(2, "0")}
+          </span>
 
-              <div class="ranking-person">
-                <strong>${escapeHtml(getDisplayName(user))}</strong>
-                <span>
-                  ${
-                    user.alive === false ||
-                    user.eliminated === true
-                      ? "탈락"
-                      : "생존 중"
-                  }
-                </span>
-              </div>
+          <div class="ranking-person">
+            <strong>
+              ${escapeHtml(getDisplayName(user))}
+            </strong>
 
-              <strong class="ranking-hits">
-                ${Number(user.totalHits || 0)}
-                <small>HITS</small>
-              </strong>
-            </li>
-          `
-        )
-        .join("")}
+            <span>
+              ${
+                user.alive === false ||
+                user.eliminated === true
+                  ? "탈락"
+                  : "생존 중"
+              }
+            </span>
+          </div>
+
+          <strong class="ranking-hits">
+            ${Number(user.totalHits || 0)}
+            <small>HITS</small>
+          </strong>
+        </li>
+      `).join("")}
     </ol>
   `;
 }
@@ -899,7 +1066,7 @@ function renderMatchManagement() {
       )
     );
 
-    if (matches.length === 0) return "";
+    if (!matches.length) return "";
 
     const roundDocument = allRounds.find(
       (round) => round.id === roundKey
@@ -933,29 +1100,21 @@ function renderMatchManagement() {
     .querySelectorAll("[data-match-winner]")
     .forEach((button) => {
       button.addEventListener("click", () => {
-        const matchId = button.dataset.matchId;
-        const winner = button.dataset.matchWinner;
-
         const match = allMatches.find(
-          (item) => item.id === matchId
+          (item) => item.id === button.dataset.matchId
         );
 
-        openMatchResult(match, winner);
-      });
-    });
-
-  adminRoundList
-    .querySelectorAll("[data-settle-round]")
-    .forEach((button) => {
-      button.addEventListener("click", () => {
-        openRoundSettlement(button.dataset.settleRound);
+        openMatchResult(
+          match,
+          button.dataset.matchWinner
+        );
       });
     });
 }
 
 function renderAdminMatchCard(match) {
-  const hasBothTeams = Boolean(match.teamA && match.teamB);
-  const locked = !hasBothTeams || Boolean(match.winner);
+  const hasTeams = Boolean(match.teamA && match.teamB);
+  const locked = !hasTeams || Boolean(match.winner);
 
   return `
     <article class="admin-match-card">
@@ -1013,19 +1172,16 @@ function renderAdminMatchCard(match) {
       }
 
       ${
-        isFinalMatch(match) && match.setResults?.length
+        isFinalMatch(match) &&
+        Array.isArray(match.setResults)
           ? `
             <div class="admin-final-result-summary">
-              ${match.setResults
-                .map(
-                  (setResult) => `
-                    <span>
-                      ${setResult.set}세트
-                      ${setResult.teamAScore}:${setResult.teamBScore}
-                    </span>
-                  `
-                )
-                .join("")}
+              ${match.setResults.map((setResult) => `
+                <span>
+                  ${setResult.set}세트
+                  ${setResult.teamAScore}:${setResult.teamBScore}
+                </span>
+              `).join("")}
             </div>
           `
           : ""
@@ -1035,19 +1191,19 @@ function renderAdminMatchCard(match) {
 }
 
 /* =========================================================
-   경기 결과 확정
+   결승 점수 및 경기 결과
 ========================================================= */
 
 function resetFinalScoreInputs() {
-  actualSetInputs.forEach((setInput) => {
-    setInput.scoreA.value = "";
-    setInput.scoreB.value = "";
-    setInput.scoreA.disabled = false;
-    setInput.scoreB.disabled = false;
-    setInput.winner.textContent = "점수를 입력하세요.";
+  actualSetInputs.forEach((input) => {
+    input.scoreA.value = "";
+    input.scoreB.value = "";
+    input.scoreA.disabled = false;
+    input.scoreB.disabled = false;
+    input.winner.textContent = "점수를 입력하세요.";
   });
 
-  actualSet3Card.classList.remove("disabled");
+  actualSet3Card?.classList.remove("disabled");
   actualFinalWinner.textContent = "점수 입력 전";
 }
 
@@ -1055,9 +1211,9 @@ function updateFinalTeamLabels(match) {
   actualFinalTeamA.textContent = match.teamA;
   actualFinalTeamB.textContent = match.teamB;
 
-  actualSetInputs.forEach((setInput) => {
-    setInput.labelA.textContent = match.teamA;
-    setInput.labelB.textContent = match.teamB;
+  actualSetInputs.forEach((input) => {
+    input.labelA.textContent = match.teamA;
+    input.labelB.textContent = match.teamB;
   });
 }
 
@@ -1084,9 +1240,7 @@ function getSetWinner(teamA, teamB, scoreA, scoreB) {
   return scoreA > scoreB ? teamA : teamB;
 }
 
-function calculateAdminFinalResult({
-  strict = false
-} = {}) {
+function calculateAdminFinalResult({ strict = false } = {}) {
   if (!selectedMatch || !isFinalMatch(selectedMatch)) {
     return null;
   }
@@ -1094,25 +1248,24 @@ function calculateAdminFinalResult({
   const teamA = selectedMatch.teamA;
   const teamB = selectedMatch.teamB;
 
-  const firstTwoSets = actualSetInputs.slice(0, 2).map(
-    (setInput, index) => {
-      const teamAScore = parseScore(setInput.scoreA);
-      const teamBScore = parseScore(setInput.scoreB);
-      const winner = getSetWinner(
-        teamA,
-        teamB,
-        teamAScore,
-        teamBScore
-      );
+  const firstTwoSets = actualSetInputs
+    .slice(0, 2)
+    .map((input, index) => {
+      const teamAScore = parseScore(input.scoreA);
+      const teamBScore = parseScore(input.scoreB);
 
       return {
         set: index + 1,
         teamAScore,
         teamBScore,
-        winner
+        winner: getSetWinner(
+          teamA,
+          teamB,
+          teamAScore,
+          teamBScore
+        )
       };
-    }
-  );
+    });
 
   firstTwoSets.forEach((result, index) => {
     const output = actualSetInputs[index].winner;
@@ -1129,22 +1282,19 @@ function calculateAdminFinalResult({
     }
   });
 
-  const firstValid = firstTwoSets.every(
+  const validFirstTwo = firstTwoSets.every(
     (result) =>
       result.teamAScore !== null &&
       result.teamBScore !== null &&
       result.winner !== "tie"
   );
 
-  if (!firstValid) {
-    actualSet3Card.classList.remove("disabled");
-    actualSetInputs[2].scoreA.disabled = false;
-    actualSetInputs[2].scoreB.disabled = false;
+  if (!validFirstTwo) {
     actualFinalWinner.textContent = "점수 입력 전";
 
     if (strict) {
       throw new Error(
-        "1세트와 2세트의 실제 점수를 정확히 입력하세요."
+        "1세트와 2세트 점수를 정확히 입력하세요."
       );
     }
 
@@ -1159,8 +1309,10 @@ function calculateAdminFinalResult({
     actualSetInputs[2].scoreB.value = "";
     actualSetInputs[2].scoreA.disabled = true;
     actualSetInputs[2].scoreB.disabled = true;
+
     actualSetInputs[2].winner.textContent =
       "3세트가 진행되지 않았습니다.";
+
     actualSet3Card.classList.add("disabled");
 
     const winner = firstTwoSets[0].winner;
@@ -1195,6 +1347,7 @@ function calculateAdminFinalResult({
   ) {
     actualSetInputs[2].winner.textContent =
       "3세트 점수를 입력하세요.";
+
     actualFinalWinner.textContent = "3세트 입력 필요";
 
     if (strict) {
@@ -1209,6 +1362,7 @@ function calculateAdminFinalResult({
   if (thirdSet.winner === "tie") {
     actualSetInputs[2].winner.textContent =
       "동점은 입력할 수 없습니다.";
+
     actualFinalWinner.textContent = "점수를 확인하세요.";
 
     if (strict) {
@@ -1222,6 +1376,7 @@ function calculateAdminFinalResult({
 
   actualSetInputs[2].winner.textContent =
     `${thirdSet.winner} 세트 승`;
+
   actualFinalWinner.textContent = thirdSet.winner;
 
   return {
@@ -1236,9 +1391,8 @@ function openMatchResult(match, winner) {
   selectedMatch = match;
   selectedWinner = winner;
 
-  matchResultTitle.textContent = `${
-    getRoundTitle(match.roundKey)
-  } 경기 결과 확정`;
+  matchResultTitle.textContent =
+    `${getRoundTitle(match.roundKey)} 경기 결과 확정`;
 
   matchResultDescription.textContent =
     "선택한 승리 팀과 경기 정보를 확인하세요.";
@@ -1263,7 +1417,7 @@ function openMatchResult(match, winner) {
     updateFinalTeamLabels(match);
 
     matchResultWarning.textContent =
-      "결승은 실제 세트별 점수까지 입력해야 결과를 확정할 수 있습니다.";
+      "결승은 실제 세트별 점수를 입력해야 결과를 확정할 수 있습니다.";
   } else {
     adminFinalScorePanel.hidden = true;
 
@@ -1274,13 +1428,13 @@ function openMatchResult(match, winner) {
   openModal(matchResultModal);
 }
 
-actualSetInputs.forEach((setInput) => {
-  setInput.scoreA?.addEventListener(
+actualSetInputs.forEach((input) => {
+  input.scoreA?.addEventListener(
     "input",
     () => calculateAdminFinalResult()
   );
 
-  setInput.scoreB?.addEventListener(
+  input.scoreB?.addEventListener(
     "input",
     () => calculateAdminFinalResult()
   );
@@ -1307,7 +1461,7 @@ async function confirmMatchResult() {
 
       if (finalResult.winner !== selectedWinner) {
         throw new Error(
-          `입력한 세트 점수의 실제 승리 팀은 ${finalResult.winner}입니다. 경기 카드에서 해당 팀을 다시 선택하세요.`
+          `입력한 점수의 실제 승리 팀은 ${finalResult.winner}입니다.`
         );
       }
 
@@ -1321,10 +1475,7 @@ async function confirmMatchResult() {
     );
 
     closeModal(matchResultModal);
-
-    showToast(
-      `${selectedMatch.id} 경기 결과를 확정했습니다.`
-    );
+    showToast("경기 결과를 확정했습니다.");
 
     selectedMatch = null;
     selectedWinner = null;
@@ -1351,34 +1502,21 @@ cancelMatchResultBtn?.addEventListener("click", () => {
 });
 
 /* =========================================================
-   라운드 정산
+   정산
 ========================================================= */
 
-function getPredictionSelections(prediction) {
-  return (
-    prediction.selections ||
-    prediction.predictions ||
-    prediction.answers ||
-    {}
-  );
-}
-
 function countCorrectPredictions(prediction, matches) {
-  const selections = getPredictionSelections(prediction);
-
   return matches.reduce((count, match) => {
-    const selectedTeam =
-      selections[match.id] ||
-      getPredictionSelection(prediction, match.id);
+    const selection = getPredictionSelection(
+      prediction,
+      match.id
+    );
 
-    return count + (selectedTeam === match.winner ? 1 : 0);
+    return count + (selection === match.winner ? 1 : 0);
   }, 0);
 }
 
-function calculateFinalTiebreak(
-  prediction,
-  finalMatch
-) {
+function calculateFinalTiebreak(prediction, finalMatch) {
   const actualSets = Array.isArray(finalMatch.setResults)
     ? finalMatch.setResults
     : [];
@@ -1399,21 +1537,22 @@ function calculateFinalTiebreak(
   let totalScoreError = 0;
 
   actualSets.forEach((actualSet, index) => {
-    const predictedSet = predictedSets.find(
-      (item) => Number(item.set) === Number(actualSet.set)
-    ) || predictedSets[index];
+    const predictedSet =
+      predictedSets.find(
+        (item) =>
+          Number(item.set) === Number(actualSet.set)
+      ) || predictedSets[index];
 
     if (!predictedSet) {
       totalScoreError += MISSING_SET_PENALTY;
       return;
     }
 
-    const predictedAScore = Number(
-      predictedSet.teamAScore
-    );
-    const predictedBScore = Number(
-      predictedSet.teamBScore
-    );
+    const predictedAScore =
+      Number(predictedSet.teamAScore);
+
+    const predictedBScore =
+      Number(predictedSet.teamBScore);
 
     if (
       !Number.isFinite(predictedAScore) ||
@@ -1432,36 +1571,85 @@ function calculateFinalTiebreak(
       );
 
     if (predictedSetWinner === actualSet.winner) {
-      correctSetWinners += 1;
+      correctSetWinners++;
     }
 
     if (
       predictedAScore === Number(actualSet.teamAScore) &&
       predictedBScore === Number(actualSet.teamBScore)
     ) {
-      exactSetScores += 1;
+      exactSetScores++;
     }
 
     totalScoreError +=
       Math.abs(
-        predictedAScore - Number(actualSet.teamAScore)
+        predictedAScore -
+        Number(actualSet.teamAScore)
       ) +
       Math.abs(
-        predictedBScore - Number(actualSet.teamBScore)
+        predictedBScore -
+        Number(actualSet.teamBScore)
       );
   });
 
   return {
     finalWinnerCorrect:
       predictedWinner === finalMatch.winner,
+
     correctSetWinners,
     exactSetScores,
     totalScoreError
   };
 }
 
+function getRoundPredictions(roundKey) {
+  const result = [];
+  const seen = new Set();
+
+  allRoundPredictions
+    .filter((prediction) =>
+      isPredictionForRound(prediction, roundKey)
+    )
+    .forEach((prediction) => {
+      const userKey =
+        prediction.uid ||
+        prediction.userId ||
+        prediction.email ||
+        prediction.id;
+
+      /*
+        라운드 일괄 예측을 우선하고, 같은 사용자의 개별 문서는
+        중복 정산하지 않습니다.
+      */
+      const hasMultipleSelections = [
+        prediction.selections,
+        prediction.predictions,
+        prediction.answers,
+        prediction.picks,
+        prediction.choices
+      ].some((container) =>
+        container &&
+        (
+          Array.isArray(container) ||
+          typeof container === "object"
+        )
+      );
+
+      const key = hasMultipleSelections
+        ? `${userKey}_${roundKey}_round`
+        : `${userKey}_${roundKey}_${prediction.matchId || prediction.id}`;
+
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(prediction);
+      }
+    });
+
+  return result;
+}
+
 function getSettlementPreview(roundKey) {
-  const roundInfo = ROUND_INFO[roundKey];
+  const info = ROUND_INFO[roundKey];
 
   const matches = sortMatches(
     allMatches.filter(
@@ -1469,21 +1657,16 @@ function getSettlementPreview(roundKey) {
     )
   );
 
-  const predictions = allRoundPredictions.filter(
-    (prediction) => prediction.roundKey === roundKey
-  );
+  const predictions = getRoundPredictions(roundKey);
 
   const results = predictions.map((prediction) => {
-    const correctCount = countCorrectPredictions(
-      prediction,
-      matches
-    );
+    const correctCount =
+      countCorrectPredictions(prediction, matches);
 
     return {
       prediction,
       correctCount,
-      passed:
-        correctCount >= roundInfo.requiredCorrect
+      passed: correctCount >= info.requiredCorrect
     };
   });
 
@@ -1491,35 +1674,31 @@ function getSettlementPreview(roundKey) {
     matches,
     predictions,
     results,
-    passCount: results.filter((result) => result.passed)
-      .length,
-    failCount: results.filter((result) => !result.passed)
-      .length
+    passCount: results.filter((result) => result.passed).length,
+    failCount: results.filter((result) => !result.passed).length
   };
 }
 
 function openRoundSettlement(roundKey) {
-  const roundInfo = ROUND_INFO[roundKey];
+  const info = ROUND_INFO[roundKey];
+  const preview = getSettlementPreview(roundKey);
 
-  if (!roundInfo) {
-    showToast("라운드 정보를 찾을 수 없습니다.", "error");
+  if (!info) {
+    showToast("라운드 정보가 없습니다.", "error");
     return;
   }
 
-  const preview = getSettlementPreview(roundKey);
-
-  if (preview.matches.length === 0) {
+  if (!preview.matches.length) {
     showToast("해당 라운드 경기가 없습니다.", "error");
     return;
   }
 
-  if (
-    preview.matches.some((match) => !match.winner)
-  ) {
+  if (preview.matches.some((match) => !match.winner)) {
     showToast(
       "모든 경기 결과를 먼저 확정하세요.",
       "error"
     );
+
     return;
   }
 
@@ -1528,19 +1707,20 @@ function openRoundSettlement(roundKey) {
     !preview.matches[0]?.setResults?.length
   ) {
     showToast(
-      "결승 세트별 실제 점수가 저장되지 않았습니다.",
+      "결승 세트별 실제 점수가 없습니다.",
       "error"
     );
+
     return;
   }
 
   selectedSettlementRound = roundKey;
 
   roundSettlementTitle.textContent =
-    `${roundInfo.title} 정산`;
+    `${info.title} 정산`;
 
   roundSettlementDescription.textContent =
-    `${preview.matches.length}경기의 결과와 ${preview.predictions.length}명의 예측을 비교합니다.`;
+    `${preview.matches.length}경기와 ${preview.predictions.length}명의 예측을 비교합니다.`;
 
   roundSettlementPreview.innerHTML = `
     <div class="settlement-stat-grid">
@@ -1565,23 +1745,11 @@ function openRoundSettlement(roundKey) {
           ${
             roundKey === "final"
               ? "우승 팀 적중"
-              : `${preview.matches.length}경기 중 ${roundInfo.requiredCorrect}경기 이상`
+              : `${info.requiredCorrect}경기 이상 적중`
           }
         </strong>
       </article>
     </div>
-
-    ${
-      roundKey === "final"
-        ? `
-          <div class="admin-message-box">
-            결승 동점 순위는 전체 적중 수 → 결승 승리 팀 →
-            세트 승자 → 정확한 세트 점수 → 점수 오차 순으로
-            계산됩니다.
-          </div>
-        `
-        : ""
-    }
   `;
 
   openModal(roundSettlementModal);
@@ -1589,9 +1757,9 @@ function openRoundSettlement(roundKey) {
 
 async function confirmRoundSettlement() {
   const roundKey = selectedSettlementRound;
-  const roundInfo = ROUND_INFO[roundKey];
+  const info = ROUND_INFO[roundKey];
 
-  if (!roundKey || !roundInfo) return;
+  if (!roundKey || !info) return;
 
   confirmRoundSettlementBtn.disabled = true;
   confirmRoundSettlementBtn.textContent = "정산 중...";
@@ -1603,84 +1771,89 @@ async function confirmRoundSettlement() {
     for (const result of preview.results) {
       const prediction = result.prediction;
 
-      const predictionRef = doc(
-        db,
-        "roundPredictions",
-        prediction.id
-      );
+      /*
+        정산 결과는 roundPredictions 문서에만 직접 기록합니다.
+        예전 predictions 문서는 기존 데이터 보존을 위해 수정하지 않습니다.
+      */
+      if (prediction._collection === "roundPredictions") {
+        const predictionUpdate = {
+          correctCount: result.correctCount,
+          passed: result.passed,
+          resultProcessed: true,
+          processedAt: serverTimestamp()
+        };
 
-      const predictionUpdate = {
-        correctCount: result.correctCount,
-        passed: result.passed,
-        resultProcessed: true,
-        processedAt: serverTimestamp()
-      };
+        if (roundKey === "final") {
+          predictionUpdate.finalTiebreak =
+            calculateFinalTiebreak(
+              prediction,
+              preview.matches[0]
+            );
+        }
 
-      if (roundKey === "final") {
-        const finalMatch = preview.matches[0];
-
-        predictionUpdate.finalTiebreak =
-          calculateFinalTiebreak(
-            prediction,
-            finalMatch
-          );
+        batch.update(
+          doc(db, "roundPredictions", prediction.id),
+          predictionUpdate
+        );
       }
 
-      batch.update(predictionRef, predictionUpdate);
+      const uid =
+        prediction.uid ||
+        prediction.userId;
 
-      const userRef = doc(db, "users", prediction.uid);
+      if (!uid) continue;
+
+      const userRef = doc(db, "users", uid);
       const userSnapshot = await getDoc(userRef);
 
       if (!userSnapshot.exists()) continue;
 
       const userData = userSnapshot.data();
-      const previousHits = Number(userData.totalHits || 0);
 
       const userUpdate = {
         totalHits:
-          previousHits + result.correctCount,
-        currentRound:
-          result.passed
-            ? roundInfo.nextRound || "finished"
-            : roundKey,
-        alive:
-          roundKey === "final"
-            ? result.passed
-            : result.passed,
+          Number(userData.totalHits || 0) +
+          result.correctCount,
+
+        currentRound: result.passed
+          ? info.nextRound || "finished"
+          : roundKey,
+
+        alive: result.passed,
         eliminated: !result.passed,
         updatedAt: serverTimestamp()
       };
 
-      if (result.passed && roundInfo.nextRound) {
-        userUpdate.eliminated = false;
-      }
-
       if (roundKey === "final") {
         userUpdate.finalTiebreak =
-          predictionUpdate.finalTiebreak;
+          calculateFinalTiebreak(
+            prediction,
+            preview.matches[0]
+          );
 
         userUpdate.finalSubmittedAt =
           prediction.submittedAt ||
           prediction.updatedAt ||
           null;
-
-        userUpdate.finalRankEligible = true;
       }
 
       batch.update(userRef, userUpdate);
     }
 
     preview.matches.forEach((match) => {
-      batch.update(doc(db, "matches", match.id), {
-        resultProcessed: true,
-        updatedAt: serverTimestamp()
-      });
+      batch.update(
+        doc(db, "matches", match.id),
+        {
+          resultProcessed: true,
+          updatedAt: serverTimestamp()
+        }
+      );
     });
 
     batch.set(
       doc(db, "rounds", roundKey),
       {
-        title: roundInfo.title,
+        title: info.title,
         status: "completed",
         settled: true,
         resultProcessed: true,
@@ -1692,18 +1865,15 @@ async function confirmRoundSettlement() {
 
     await batch.commit();
 
-    if (roundInfo.nextRound) {
-      await prepareNextRound(
-        roundKey,
-        roundInfo.nextRound
-      );
+    if (info.nextRound) {
+      await prepareNextRound(info.nextRound);
     } else {
       await updateTournamentCurrentRound("finished");
     }
 
     closeModal(roundSettlementModal);
 
-    showToast(`${roundInfo.title} 정산을 완료했습니다.`);
+    showToast(`${info.title} 정산을 완료했습니다.`);
 
     selectedSettlementRound = null;
     await loadAdminData();
@@ -1726,39 +1896,27 @@ confirmRoundSettlementBtn?.addEventListener(
   confirmRoundSettlement
 );
 
-cancelRoundSettlementBtn?.addEventListener("click", () => {
-  selectedSettlementRound = null;
-  closeModal(roundSettlementModal);
-});
+cancelRoundSettlementBtn?.addEventListener(
+  "click",
+  () => {
+    selectedSettlementRound = null;
+    closeModal(roundSettlementModal);
+  }
+);
 
 /* =========================================================
-   다음 라운드 대진 연결
+   다음 라운드 연결
 ========================================================= */
 
-function getSourceWinner(sourceMatchId) {
-  if (!sourceMatchId) return null;
-
-  const sourceMatch = allMatches.find(
-    (match) => match.id === sourceMatchId
-  );
-
-  return sourceMatch?.winner || null;
-}
-
-async function prepareNextRound(
-  completedRoundKey,
-  nextRoundKey
-) {
-  const freshMatchSnapshot = await getDocs(
+async function prepareNextRound(nextRoundKey) {
+  const snapshot = await getDocs(
     collection(db, "matches")
   );
 
-  const freshMatches = freshMatchSnapshot.docs.map(
-    (item) => ({
-      id: item.id,
-      ...item.data()
-    })
-  );
+  const freshMatches = snapshot.docs.map((item) => ({
+    id: item.id,
+    ...item.data()
+  }));
 
   const nextMatches = sortMatches(
     freshMatches.filter(
@@ -1769,54 +1927,35 @@ async function prepareNextRound(
   const batch = writeBatch(db);
 
   nextMatches.forEach((match) => {
-    let teamA =
-      getSourceWinner(match.sourceA) ||
+    const sourceA = freshMatches.find(
+      (item) => item.id === match.sourceA
+    );
+
+    const sourceB = freshMatches.find(
+      (item) => item.id === match.sourceB
+    );
+
+    const teamA =
+      sourceA?.winner ||
       match.teamA ||
+      match.byeTeam ||
       null;
 
-    let teamB =
-      getSourceWinner(match.sourceB) ||
+    const teamB =
+      sourceB?.winner ||
       match.teamB ||
       null;
 
-    /*
-      sourceA/sourceB가 있는데 기존 allMatches에 반영되지 않은 경우
-      새로 읽은 경기 목록에서 다시 찾습니다.
-    */
-    if (match.sourceA) {
-      teamA =
-        freshMatches.find(
-          (source) => source.id === match.sourceA
-        )?.winner || teamA;
-    }
-
-    if (match.sourceB) {
-      teamB =
-        freshMatches.find(
-          (source) => source.id === match.sourceB
-        )?.winner || teamB;
-    }
-
-    /*
-      실제 부전승 경기만 byeTeam을 사용합니다.
-      과거에 잘못 남은 byeTeam 필드는 팀 연결보다 우선하지 않습니다.
-    */
-    if (!teamA && match.byeTeam) {
-      teamA = match.byeTeam;
-    }
-
-    const updateData = {
-      teamA,
-      teamB,
-      status: "open",
-      winner: null,
-      resultProcessed: false,
-      updatedAt: serverTimestamp()
-    };
-
     batch.set(
       doc(db, "matches", match.id),
-      updateData,
+      {
+        teamA,
+        teamB,
+        status: "open",
+        winner: null,
+        resultProcessed: false,
+        updatedAt: serverTimestamp()
+      },
       { merge: true }
     );
   });
@@ -1850,6 +1989,7 @@ async function updateTournamentCurrentRound(roundKey) {
       updateData,
       { merge: true }
     ),
+
     setDoc(
       doc(db, "tournament", "config"),
       updateData,
@@ -1859,7 +1999,7 @@ async function updateTournamentCurrentRound(roundKey) {
 }
 
 /* =========================================================
-   참가자 목록
+   참가자 표
 ========================================================= */
 
 function renderParticipantList() {
@@ -1867,14 +2007,13 @@ function renderParticipantList() {
     getVisibleParticipants()
   );
 
-  if (users.length === 0) {
+  if (!users.length) {
     adminParticipantList.innerHTML = `
       <tr>
-        <td colspan="5">
-          아직 참가자가 없습니다.
-        </td>
+        <td colspan="5">아직 참가자가 없습니다.</td>
       </tr>
     `;
+
     return;
   }
 
@@ -1894,9 +2033,7 @@ function renderParticipantList() {
                 ${escapeHtml(getDisplayName(user))}
               </strong>
 
-              <span>
-                ${escapeHtml(user.email || "")}
-              </span>
+              <span>${escapeHtml(user.email || "")}</span>
             </div>
           </td>
 
@@ -1926,7 +2063,7 @@ function renderParticipantList() {
 }
 
 /* =========================================================
-   관리자 페이지 메뉴
+   메뉴·모달
 ========================================================= */
 
 document
@@ -1953,19 +2090,15 @@ document
     });
   });
 
-/* =========================================================
-   모달 및 데이터 확인
-========================================================= */
-
 setupTournamentBtn?.addEventListener("click", () => {
   setupStatus.innerHTML = `
-    <strong>현재 저장된 데이터</strong><br>
+    <strong>현재 Firebase 데이터</strong><br>
     경기 ${allMatches.length}개 ·
     라운드 ${allRounds.length}개 ·
     참가자 ${getVisibleParticipants().length}명 ·
-    예측 ${allRoundPredictions.length}개
+    예측 문서 ${allRoundPredictions.length}개
     <br><br>
-    기존 데이터는 그대로 유지됩니다. 다시 생성하지 마세요.
+    기존 데이터는 그대로 유지됩니다.
   `;
 
   openModal(setupModal);
@@ -1975,11 +2108,11 @@ document
   .querySelectorAll("[data-close-modal]")
   .forEach((button) => {
     button.addEventListener("click", () => {
-      const modal = document.getElementById(
-        button.dataset.closeModal
+      closeModal(
+        document.getElementById(
+          button.dataset.closeModal
+        )
       );
-
-      closeModal(modal);
     });
   });
 
@@ -1998,5 +2131,5 @@ document.addEventListener("keydown", (event) => {
 
   document
     .querySelectorAll(".modal-backdrop:not([hidden])")
-    .forEach((modal) => closeModal(modal));
+    .forEach(closeModal);
 });
