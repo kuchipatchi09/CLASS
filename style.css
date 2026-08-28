@@ -2107,3 +2107,601 @@ main {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+/* =========================================================
+   결승 승부·세트 점수 예측
+========================================================= */
+
+.final-prediction-panel {
+  margin-top: 24px;
+  padding: 28px;
+  border: 1px solid #dfe5ed;
+  border-radius: 24px;
+  background: #f8fafc;
+}
+
+.final-prediction-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.final-prediction-heading h2,
+.final-prediction-heading h3 {
+  margin: 4px 0 8px;
+  color: #101820;
+  font-size: 28px;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+}
+
+.final-prediction-heading p {
+  margin: 0;
+  color: #78828d;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.final-team-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  min-width: 280px;
+  padding: 15px 18px;
+  border: 1px solid #dfe5ed;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.final-team-heading strong {
+  flex: 1;
+  color: #101820;
+  text-align: center;
+  font-size: 17px;
+}
+
+.final-team-heading span {
+  color: #9ba7b5;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.final-set-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.final-set-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #dfe5ed;
+  border-radius: 20px;
+  background: #fff;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.final-set-card.disabled {
+  opacity: 0.52;
+  background: #f1f4f8;
+}
+
+.final-set-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.final-set-title strong {
+  color: #101820;
+  font-size: 17px;
+}
+
+.final-set-title span {
+  overflow: hidden;
+  color: #7e8996;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.final-score-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
+  align-items: end;
+  gap: 10px;
+}
+
+.final-score-inputs label {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.final-score-inputs label span {
+  overflow: hidden;
+  color: #8b96a5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.final-score-inputs input {
+  width: 100%;
+  height: 64px;
+  padding: 0 10px;
+  border: 1px solid #dbe2eb;
+  border-radius: 14px;
+  outline: none;
+  background: #f7f9fc;
+  color: #101820;
+  font: inherit;
+  font-size: 25px;
+  font-weight: 800;
+  text-align: center;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.final-score-inputs input::-webkit-outer-spin-button,
+.final-score-inputs input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.final-score-inputs input:focus {
+  border-color: #1468ff;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(20, 104, 255, 0.1);
+}
+
+.final-score-inputs input:disabled {
+  cursor: not-allowed;
+  background: #e8edf3;
+  color: #a5afbb;
+}
+
+.score-divider {
+  display: flex;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  color: #98a3b1;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.final-predicted-winner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 16px;
+  padding: 18px 20px;
+  border-radius: 17px;
+  background: #101820;
+  color: #aeb9c7;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.final-predicted-winner strong {
+  color: #fff;
+  font-size: 21px;
+  letter-spacing: -0.03em;
+}
+
+/* =========================================================
+   관리자 결승 실제 점수 입력창
+========================================================= */
+
+.admin-final-score-panel {
+  margin-top: 22px;
+  padding: 22px;
+  border: 1px solid #dfe5ed;
+  border-radius: 20px;
+  background: #f6f8fb;
+}
+
+.admin-final-score-panel[hidden] {
+  display: none !important;
+}
+
+.admin-final-score-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 8px;
+}
+
+.admin-final-score-heading h3 {
+  margin: 4px 0 0;
+  color: #101820;
+  font-size: 22px;
+  letter-spacing: -0.035em;
+}
+
+.admin-final-team-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 270px;
+  padding: 13px 16px;
+  border: 1px solid #dfe5ed;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.admin-final-team-heading strong {
+  flex: 1;
+  color: #101820;
+  text-align: center;
+}
+
+.admin-final-team-heading span {
+  color: #9ba6b4;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.form-help {
+  margin: 0 0 18px;
+  color: #7b8693;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-final-set-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-final-set-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #dfe5ed;
+  border-radius: 17px;
+  background: #fff;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.admin-final-set-card.disabled {
+  opacity: 0.48;
+  background: #edf1f5;
+}
+
+.admin-final-set-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.admin-final-set-title strong {
+  color: #101820;
+  font-size: 16px;
+}
+
+.admin-final-set-title span {
+  overflow: hidden;
+  color: #8792a0;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-final-score-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
+  align-items: end;
+  gap: 8px;
+}
+
+.admin-final-score-inputs label {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.admin-final-score-inputs label span {
+  overflow: hidden;
+  color: #8b96a5;
+  font-size: 10px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-final-score-inputs input {
+  width: 100%;
+  height: 56px;
+  padding: 0 8px;
+  border: 1px solid #dbe2eb;
+  border-radius: 12px;
+  outline: none;
+  background: #f7f9fc;
+  color: #101820;
+  font: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.admin-final-score-inputs input::-webkit-outer-spin-button,
+.admin-final-score-inputs input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.admin-final-score-inputs input:focus {
+  border-color: #1468ff;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(20, 104, 255, 0.1);
+}
+
+.admin-final-score-inputs input:disabled {
+  cursor: not-allowed;
+  background: #e6ebf1;
+  color: #a4afbb;
+}
+
+.admin-final-winner-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: 15px;
+  background: #101820;
+  color: #aeb9c7;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-final-winner-box strong {
+  color: #fff;
+  font-size: 19px;
+}
+
+/* 저장된 결승 결과 */
+.admin-final-result-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.admin-final-result-summary span {
+  padding: 7px 10px;
+  border-radius: 9px;
+  background: #edf3ff;
+  color: #1468ff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   관리자 화면 보조 스타일
+========================================================= */
+
+.admin-empty-state {
+  padding: 30px 20px;
+  color: #8a95a2;
+  text-align: center;
+}
+
+.current-round-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.current-round-info h3 {
+  margin: 8px 0;
+  color: #101820;
+  font-size: 26px;
+  letter-spacing: -0.04em;
+}
+
+.current-round-info p {
+  margin: 0;
+  color: #7c8794;
+}
+
+.round-status {
+  display: inline-flex;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #e9f1ff;
+  color: #1468ff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #18a85b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #18a85b;
+  box-shadow: 0 0 0 6px rgba(24, 168, 91, 0.1);
+}
+
+.live-prediction-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.live-prediction-card {
+  padding: 20px;
+  border: 1px solid #e0e6ee;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.live-match-meta,
+.prediction-ratio-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.live-match-meta {
+  color: #8b96a5;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.live-match-teams {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  align-items: center;
+  margin: 22px 0;
+  color: #101820;
+  text-align: center;
+}
+
+.live-match-teams strong {
+  font-size: 22px;
+}
+
+.live-match-teams span {
+  color: #9ca7b4;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.prediction-ratio-row + .prediction-ratio-row {
+  margin-top: 14px;
+}
+
+.prediction-ratio-label {
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.prediction-ratio-label span {
+  color: #8c97a5;
+}
+
+.prediction-ratio-track {
+  overflow: hidden;
+  height: 8px;
+  border-radius: 999px;
+  background: #e3e8ef;
+}
+
+.prediction-ratio-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #1468ff;
+  transition: width 0.3s ease;
+}
+
+.prediction-total {
+  margin: 16px 0 0;
+  color: #8a95a3;
+  font-size: 11px;
+}
+
+/* =========================================================
+   반응형: 패드
+========================================================= */
+
+@media (max-width: 1100px) {
+  .final-set-list,
+  .admin-final-set-list {
+    grid-template-columns: 1fr;
+  }
+
+  .final-prediction-heading,
+  .admin-final-score-heading {
+    flex-direction: column;
+  }
+
+  .final-team-heading,
+  .admin-final-team-heading {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .live-prediction-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   반응형: 모바일
+========================================================= */
+
+@media (max-width: 640px) {
+  .final-prediction-panel,
+  .admin-final-score-panel {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .final-prediction-heading h2,
+  .final-prediction-heading h3 {
+    font-size: 23px;
+  }
+
+  .final-set-card,
+  .admin-final-set-card {
+    padding: 16px;
+  }
+
+  .final-score-inputs input,
+  .admin-final-score-inputs input {
+    height: 54px;
+    font-size: 21px;
+  }
+
+  .final-predicted-winner,
+  .admin-final-winner-box,
+  .current-round-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
