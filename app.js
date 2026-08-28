@@ -1,4 +1,10 @@
-import { auth, db } from "./firebase-config.js";
+import {
+  auth,
+  db,
+  googleProvider
+} from "./firebase-config.js";
+
+const provider = googleProvider;
 
 import {
   GoogleAuthProvider,
