@@ -4,7 +4,7 @@ import {
   googleProvider
 } from "./firebase-config.js";
 
-const provider = googleProvider;
+
 
 import {
   GoogleAuthProvider,
@@ -27,7 +27,6 @@ const SCHOOL_DOMAIN = "g.cnees.kr";
 const ADMIN_EMAIL = "cnsh32_1218@g.cnees.kr";
 const HIDDEN_EMAIL = "whisk1209@g.cnees.kr";
 
-const provider = new GoogleAuthProvider();
 
 provider.setCustomParameters({
   hd: SCHOOL_DOMAIN,
