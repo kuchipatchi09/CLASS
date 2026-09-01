@@ -980,16 +980,6 @@ function sortRankingUsers(users) {
     }
 
     if (
-      finalB.exactSetScores !==
-      finalA.exactSetScores
-    ) {
-      return (
-        finalB.exactSetScores -
-        finalA.exactSetScores
-      );
-    }
-
-    if (
       finalA.totalScoreError !==
       finalB.totalScoreError
     ) {
@@ -1005,7 +995,6 @@ function sortRankingUsers(users) {
     );
   });
 }
-
 function renderTopRanking() {
   const ranking = sortRankingUsers(
     getVisibleParticipants()
@@ -1517,6 +1506,8 @@ function countCorrectPredictions(prediction, matches) {
 }
 
 function calculateFinalTiebreak(prediction, finalMatch) {
+  const MAX_SET_ERROR = 15;
+
   const actualSets = Array.isArray(finalMatch.setResults)
     ? finalMatch.setResults
     : [];
@@ -1528,13 +1519,12 @@ function calculateFinalTiebreak(prediction, finalMatch) {
     ? finalPrediction.sets
     : [];
 
-  const predictedWinner =
+  const predictedFinalWinner =
     finalPrediction.winner ||
     getPredictionSelection(prediction, finalMatch.id);
 
   let correctSetWinners = 0;
-  let exactSetScores = 0;
-  let totalScoreError = 0;
+  let totalNormalizedError = 0;
 
   actualSets.forEach((actualSet, index) => {
     const predictedSet =
@@ -1543,8 +1533,12 @@ function calculateFinalTiebreak(prediction, finalMatch) {
           Number(item.set) === Number(actualSet.set)
       ) || predictedSets[index];
 
+    /*
+      실제로 진행된 세트에 대한 예측이 없으면
+      최대 오차 15점을 적용합니다.
+    */
     if (!predictedSet) {
-      totalScoreError += MISSING_SET_PENALTY;
+      totalNormalizedError += MAX_SET_ERROR;
       return;
     }
 
@@ -1554,54 +1548,132 @@ function calculateFinalTiebreak(prediction, finalMatch) {
     const predictedBScore =
       Number(predictedSet.teamBScore);
 
-    if (
+    const actualAScore =
+      Number(actualSet.teamAScore);
+
+    const actualBScore =
+      Number(actualSet.teamBScore);
+
+    const invalidScores =
       !Number.isFinite(predictedAScore) ||
-      !Number.isFinite(predictedBScore)
-    ) {
-      totalScoreError += MISSING_SET_PENALTY;
+      !Number.isFinite(predictedBScore) ||
+      !Number.isFinite(actualAScore) ||
+      !Number.isFinite(actualBScore) ||
+      predictedAScore < 0 ||
+      predictedBScore < 0 ||
+      actualAScore < 0 ||
+      actualBScore < 0 ||
+      predictedAScore === predictedBScore ||
+      actualAScore === actualBScore;
+
+    if (invalidScores) {
+      totalNormalizedError += MAX_SET_ERROR;
       return;
     }
 
     const predictedSetWinner =
-      predictedSet.winner ||
+      predictedAScore > predictedBScore
+        ? finalMatch.teamA
+        : finalMatch.teamB;
+
+    const actualSetWinner =
+      actualSet.winner ||
       (
-        predictedAScore > predictedBScore
+        actualAScore > actualBScore
           ? finalMatch.teamA
           : finalMatch.teamB
       );
 
-    if (predictedSetWinner === actualSet.winner) {
-      correctSetWinners++;
+    /*
+      세트 승자를 틀린 경우 해당 세트는
+      최대 오차 15점으로 처리합니다.
+    */
+    if (predictedSetWinner !== actualSetWinner) {
+      totalNormalizedError += MAX_SET_ERROR;
+      return;
     }
+
+    correctSetWinners += 1;
+
+    const predictedWinnerScore =
+      predictedSetWinner === finalMatch.teamA
+        ? predictedAScore
+        : predictedBScore;
+
+    const predictedLoserScore =
+      predictedSetWinner === finalMatch.teamA
+        ? predictedBScore
+        : predictedAScore;
+
+    const actualWinnerScore =
+      actualSetWinner === finalMatch.teamA
+        ? actualAScore
+        : actualBScore;
+
+    const actualLoserScore =
+      actualSetWinner === finalMatch.teamA
+        ? actualBScore
+        : actualAScore;
 
     if (
-      predictedAScore === Number(actualSet.teamAScore) &&
-      predictedBScore === Number(actualSet.teamBScore)
+      predictedWinnerScore <= 0 ||
+      actualWinnerScore <= 0
     ) {
-      exactSetScores++;
+      totalNormalizedError += MAX_SET_ERROR;
+      return;
     }
 
-    totalScoreError +=
-      Math.abs(
-        predictedAScore -
-        Number(actualSet.teamAScore)
-      ) +
-      Math.abs(
-        predictedBScore -
-        Number(actualSet.teamBScore)
+    /*
+      예측 점수와 실제 점수를 각각
+      승자 15점 기준으로 환산합니다.
+    */
+    const normalizedPredictedLoserScore =
+      15 * (
+        predictedLoserScore /
+        predictedWinnerScore
       );
+
+    const normalizedActualLoserScore =
+      15 * (
+        actualLoserScore /
+        actualWinnerScore
+      );
+
+    const setError = Math.abs(
+      normalizedPredictedLoserScore -
+      normalizedActualLoserScore
+    );
+
+    totalNormalizedError += Math.min(
+      MAX_SET_ERROR,
+      setError
+    );
   });
+
+  /*
+    실제 진행된 세트 수로 나눈 평균 오차입니다.
+    랭킹 비교에는 반올림하지 않은 원래 값을 사용합니다.
+  */
+  const normalizedScoreError =
+    actualSets.length > 0
+      ? totalNormalizedError / actualSets.length
+      : MAX_SET_ERROR;
 
   return {
     finalWinnerCorrect:
-      predictedWinner === finalMatch.winner,
+      predictedFinalWinner === finalMatch.winner,
 
     correctSetWinners,
-    exactSetScores,
-    totalScoreError
+
+    /*
+      기존 랭킹 코드와 호환하기 위해
+      totalScoreError에도 평균 환산 오차를 저장합니다.
+    */
+    totalScoreError: normalizedScoreError,
+    normalizedScoreError,
+    scoreErrorMethod: "15-point-ratio-v1"
   };
 }
-
 function getRoundPredictions(roundKey) {
   const result = [];
   const seen = new Set();
