@@ -1286,38 +1286,51 @@ function getSortedRankingUsers() {
       if (hits !== 0) return hits;
 
       const winnerCorrect =
-        Number(b.finalTiebreak?.finalWinnerCorrect === true) -
-        Number(a.finalTiebreak?.finalWinnerCorrect === true);
+        Number(
+          b.finalTiebreak?.finalWinnerCorrect === true
+        ) -
+        Number(
+          a.finalTiebreak?.finalWinnerCorrect === true
+        );
 
-      if (winnerCorrect !== 0) return winnerCorrect;
+      if (winnerCorrect !== 0) {
+        return winnerCorrect;
+      }
 
       const setWinners =
-        Number(b.finalTiebreak?.correctSetWinners || 0) -
-        Number(a.finalTiebreak?.correctSetWinners || 0);
+        Number(
+          b.finalTiebreak?.correctSetWinners || 0
+        ) -
+        Number(
+          a.finalTiebreak?.correctSetWinners || 0
+        );
 
-      if (setWinners !== 0) return setWinners;
-
-      const exactScores =
-        Number(b.finalTiebreak?.exactSetScores || 0) -
-        Number(a.finalTiebreak?.exactSetScores || 0);
-
-      if (exactScores !== 0) return exactScores;
+      if (setWinners !== 0) {
+        return setWinners;
+      }
 
       const errorA =
-        a.finalTiebreak?.totalScoreError ?? Number.MAX_SAFE_INTEGER;
+        a.finalTiebreak?.normalizedScoreError ??
+        a.finalTiebreak?.totalScoreError ??
+        Number.MAX_SAFE_INTEGER;
 
       const errorB =
-        b.finalTiebreak?.totalScoreError ?? Number.MAX_SAFE_INTEGER;
+        b.finalTiebreak?.normalizedScoreError ??
+        b.finalTiebreak?.totalScoreError ??
+        Number.MAX_SAFE_INTEGER;
 
-      if (errorA !== errorB) return errorA - errorB;
+      if (errorA !== errorB) {
+        return errorA - errorB;
+      }
 
-      return String(a.displayName || a.name || "").localeCompare(
+      return String(
+        a.displayName || a.name || ""
+      ).localeCompare(
         String(b.displayName || b.name || ""),
         "ko"
       );
     });
 }
-
 function renderRanking() {
   const ranking = getSortedRankingUsers();
 
